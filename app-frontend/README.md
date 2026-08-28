@@ -10,8 +10,6 @@ administrativo para empleados.
 
 | | |
 |---|---|
-| **Asignatura** | Proyectos Informáticos |
-| **Docente** | Ing. Andrés Roberto León Yácelga, Mg. |
 | **Universidad** | UNIANDES — Ambato, Ecuador |
 | **Grupo** | 7 |
 

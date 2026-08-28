@@ -16,9 +16,9 @@ reportes y recomendaciones turísticas con IA.
 
 | Integrante |
 |---|
+| Noboa Pumalema Javier David |
 | Huallco Mungabusi Luis Fabián |
 | Figueroa Ocampo Lisseth Nayely |
-| Noboa Pumalema Javier David |
 
 ---
 
