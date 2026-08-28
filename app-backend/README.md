@@ -111,24 +111,8 @@ scripts son la única fuente de verdad.
 **1. Crear la base desde cero:**
 
 ```bash
-mysql -u root -p < "../Hotel Bombay/database/db_hotelbombay_setup.sql"
+mysql -u root -p < "../Hotel Bombay/database/dbhotelbombay.sql"
 ```
-
-**2. Aplicar las migraciones posteriores:**
-
-```bash
-node run-migration.js          # ejecuta todas las pendientes, en orden
-node run-migration.js 010      # ejecuta solo la migración 010
-```
-
-Las migraciones viven en `migrations/` y están numeradas. Son idempotentes
-(`CREATE TABLE IF NOT EXISTS`, etc.), así que volver a correrlas no rompe nada.
-
-> **Importante:** si se agrega una migración nueva y no se ejecuta, los endpoints
-> que dependan de esas tablas devolverán error 500. Ante cualquier fallo
-> inesperado tras actualizar el código, el primer paso es correr las migraciones.
-
----
 
 ## Levantar el proyecto
 
