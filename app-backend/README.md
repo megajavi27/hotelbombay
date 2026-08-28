@@ -108,7 +108,7 @@ MAIL_REDIRECT_TO=
 El esquema se administra con scripts SQL, no con `synchronize` de TypeORM. Los
 scripts son la única fuente de verdad.
 
-**1. Crear la base desde cero:**
+**Crear la base de datos:**
 
 ```bash
 mysql -u root -p < "../Hotel Bombay/database/dbhotelbombay.sql"
