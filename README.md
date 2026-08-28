@@ -54,9 +54,8 @@ reutilizables) y `features` (una carpeta por pantalla).
 
 ```
 1. Base de datos MySQL
-2. Migraciones      → cd app-backend  && node run-migration.js
-3. Backend          → cd app-backend  && npm run dev      (puerto 3000)
-4. Frontend         → cd app-frontend && npm start        (puerto 4200)
+1. Backend          → cd app-backend  && npm run dev      (puerto 3000)
+2. Frontend         → cd app-frontend && npm start        (puerto 4200)
 ```
 
 El frontend no funciona sin el backend levantado: todas sus pantallas obtienen

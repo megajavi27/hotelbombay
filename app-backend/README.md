@@ -78,8 +78,8 @@ DB_PASSWORD=
 DB_DATABASE=
 
 # JWT
-JWT_SECRET=una_cadena_larga_y_aleatoria
-JWT_EXPIRES_IN=8h
+JWT_SECRET=
+JWT_EXPIRES_IN=
 
 # CORS y enlaces de los correos
 CORS_ORIGIN=
