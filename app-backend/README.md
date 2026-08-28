@@ -67,8 +67,8 @@ Copia `env.example.txt` como `.env` en la raíz de `app-backend/` y completa los
 valores. **El archivo `.env` nunca se sube al repositorio.**
 
 ```env
-PORT=3000
-API_PREFIX=api
+PORT=
+API_PREFIX=
 
 # Base de datos MySQL
 DB_HOST=
@@ -88,17 +88,10 @@ FRONTEND_URL=
 # IA (opcional)
 OPENAI_API_KEY=
 
-# Correo — Opción A: API de Mailtrap
+# Correo: API de Mailtrap
 MAIL_TOKEN=
 MAIL_FROM_ADDRESS=
 MAIL_FROM_NAME=
-
-# Correo — Opción B: SMTP (dejar vacío si se usa la Opción A)
-MAIL_HOST=
-MAIL_PORT=2525
-MAIL_SECURE=false
-MAIL_USER=
-MAIL_PASS=
 
 # Desvía todos los correos a esta dirección (solo para pruebas)
 MAIL_REDIRECT_TO=

@@ -15,9 +15,9 @@ administrativo para empleados.
 
 ### Integrantes
 
+- Noboa Pumalema Javier David
 - Huallco Mungabusi Luis Fabián
 - Figueroa Ocampo Lisseth Nayely
-- Noboa Pumalema Javier David
 
 ---
 
