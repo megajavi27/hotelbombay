@@ -1,0 +1,72 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Hotel Bombay — Backend (NestJS)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Dependencias y compilado
+/node_modules
+/dist
+/build
+/migrations
+
+# ── Credenciales ────────────────────────────────────────────────────────────
+# NUNCA subir el .env: contiene la contraseña de MySQL, el JWT_SECRET,
+# la API key de OpenAI y las credenciales de correo.
+.env
+.env.*
+!.env.example
+!env.example.txt
+
+# ── Archivos subidos por los usuarios ───────────────────────────────────────
+# Fotos de habitaciones, comprobantes de transferencia, etc.
+# Son datos de ejecución, no código: se regeneran al usar el sistema.
+/uploads/*
+!/uploads/.gitkeep
+
+# PDF generados por los reportes
+*.pdf
+!docs/**/*.pdf
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Pruebas y cobertura
+/coverage
+/.nyc_output
+
+# Caché de Puppeteer / navegador descargado
+.cache/
+.puppeteer/
+
+# Temporales y datos de ejecución
+.temp
+.tmp
+pids
+*.pid
+*.seed
+*.pid.lock
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Editores e IDEs
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
