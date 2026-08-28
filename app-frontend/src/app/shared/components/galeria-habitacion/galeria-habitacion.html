@@ -1,0 +1,119 @@
+<div class="flex flex-col gap-3">
+
+  <!-- Cabecera -->
+  <div class="flex items-center justify-between gap-3 flex-wrap">
+    <div>
+      <h3 class="text-xs font-semibold uppercase tracking-wider text-secondary">Fotos de la habitación</h3>
+      <p class="text-xs text-on-surface-variant mt-0.5">
+        {{ imagenes().length }} de {{ maxFotos }} · JPG, PNG o WEBP · hasta {{ maxMb }} MB cada una
+      </p>
+    </div>
+
+    <div>
+      <input
+        #inputArchivos
+        type="file"
+        class="hidden"
+        accept="image/jpeg,image/png,image/webp"
+        multiple
+        (change)="onArchivosSeleccionados($event)">
+      <button
+        mat-stroked-button
+        type="button"
+        color="primary"
+        [disabled]="isSubiendo() || imagenes().length >= maxFotos"
+        (click)="inputArchivos.click()">
+        <!-- Cada rama deja un único nodo raíz para que <mat-icon> se proyecte en
+             el slot de icono de MatButton (NG8011); el texto va fuera. -->
+        @if (isSubiendo()) {
+          <mat-progress-spinner diameter="18" mode="indeterminate" class="inline-block"></mat-progress-spinner>
+        } @else {
+          <mat-icon>add_photo_alternate</mat-icon>
+        }
+        {{ isSubiendo() ? 'Subiendo...' : 'Añadir fotos' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Contenido -->
+  @if (isLoading()) {
+    <div class="py-10 flex flex-col items-center gap-2 text-on-surface-variant">
+      <mat-progress-spinner diameter="30" mode="indeterminate"></mat-progress-spinner>
+      <span class="text-sm">Cargando fotos...</span>
+    </div>
+  } @else if (imagenes().length === 0) {
+    <button
+      type="button"
+      class="w-full py-10 rounded-xl border-2 border-dashed border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors flex flex-col items-center gap-2"
+      [disabled]="isSubiendo()"
+      (click)="inputArchivos.click()">
+      <mat-icon style="font-size:2.5rem;width:2.5rem;height:2.5rem;opacity:.4">photo_library</mat-icon>
+      <span class="text-sm font-medium">Esta habitación todavía no tiene fotos</span>
+      <span class="text-xs">Haz clic para subir hasta {{ maxPorSubida }} a la vez</span>
+    </button>
+  } @else {
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+      @for (imagen of imagenes(); track imagen.id_imagen) {
+        <figure class="relative group rounded-xl overflow-hidden border border-outline-variant bg-surface-variant/30 aspect-[4/3]">
+          <button
+            type="button"
+            class="block w-full h-full cursor-zoom-in"
+            [attr.aria-label]="'Ampliar foto ' + ($index + 1)"
+            (click)="ampliar($index)">
+            <img
+              [src]="url(imagen)"
+              [alt]="imagen.titulo || 'Foto de la habitación'"
+              class="w-full h-full object-cover"
+              loading="lazy">
+          </button>
+
+          @if (imagen.es_portada) {
+            <span class="absolute top-2 left-2 hb-badge hb-badge-success text-[10px] shadow-sm">
+              <mat-icon class="!text-xs !w-3 !h-3 align-middle mr-0.5">star</mat-icon>
+              Portada
+            </span>
+          }
+
+          <!-- Acciones: visibles al pasar el ratón y siempre en pantallas táctiles -->
+          <figcaption
+            class="absolute inset-x-0 bottom-0 flex items-center justify-end gap-1 p-1.5
+                   bg-gradient-to-t from-black/70 to-transparent
+                   opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity
+                   max-sm:opacity-100">
+            @if (!imagen.es_portada) {
+              <button
+                mat-icon-button
+                type="button"
+                class="!text-white"
+                matTooltip="Usar como portada"
+                (click)="marcarPortada(imagen)">
+                <mat-icon>star_border</mat-icon>
+              </button>
+            }
+            <button
+              mat-icon-button
+              type="button"
+              class="!text-white"
+              matTooltip="Eliminar foto"
+              (click)="eliminar(imagen)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </figcaption>
+        </figure>
+      }
+    </div>
+
+    <p class="text-xs text-on-surface-variant">
+      La portada es la miniatura que se muestra en el listado de habitaciones y en la página pública.
+    </p>
+  }
+
+</div>
+
+@if (lightboxAbierto()) {
+  <app-lightbox
+    [imagenes]="urlsAmpliadas()"
+    [indiceInicial]="indiceLightbox()"
+    alt="Foto de la habitación"
+    (cerrado)="lightboxAbierto.set(false)"></app-lightbox>
+}

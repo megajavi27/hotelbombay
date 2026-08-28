@@ -1,0 +1,114 @@
+<div class="flex h-screen overflow-hidden bg-surface">
+
+  <!-- Imagen decorativa -->
+  <div class="hidden lg:block lg:w-1/2 relative bg-primary-container shrink-0">
+    <img
+      src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+      alt="Luxury Hotel" class="absolute inset-0 w-full h-full object-cover opacity-80 mix-blend-overlay">
+    <div class="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent"></div>
+    <div class="absolute bottom-16 left-16 text-on-primary">
+      <h1 class="font-display text-5xl font-bold mb-4 text-secondary-container">Hotel Bombay</h1>
+      <p class="font-body text-xl tracking-wide">Donde el lujo se encuentra con la tranquilidad</p>
+    </div>
+  </div>
+
+  <!-- Formulario -->
+  <div class="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-10 lg:p-16 bg-surface overflow-y-auto">
+    <div class="w-full max-w-md">
+
+      <div class="text-center mb-8 lg:text-left">
+        <h1 class="font-display text-3xl font-bold text-primary">Crear cuenta</h1>
+        <p class="text-on-surface-variant text-sm mt-2 font-body">Regístrate para reservar en Hotel Bombay</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-2">
+
+        <div class="grid grid-cols-2 gap-2">
+          <mat-form-field class="w-full">
+            <mat-label>Nombre</mat-label>
+            <input matInput formControlName="nombre" autocomplete="given-name">
+            @if (form.get('nombre')?.touched && form.get('nombre')?.errors?.['required']) {
+              <mat-error>Requerido.</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field class="w-full">
+            <mat-label>Apellido</mat-label>
+            <input matInput formControlName="apellido" autocomplete="family-name">
+            @if (form.get('apellido')?.touched && form.get('apellido')?.errors?.['required']) {
+              <mat-error>Requerido.</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <mat-form-field class="w-full">
+          <mat-label>Correo Electrónico</mat-label>
+          <mat-icon matPrefix class="mr-2 opacity-60">mail</mat-icon>
+          <input matInput type="email" formControlName="email" autocomplete="email">
+          @if (form.get('email')?.touched && form.get('email')?.errors?.['required']) {
+            <mat-error>El correo es requerido.</mat-error>
+          }
+          @if (form.get('email')?.touched && form.get('email')?.errors?.['email']) {
+            <mat-error>Formato inválido.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field class="w-full">
+          <mat-label>Contraseña</mat-label>
+          <mat-icon matPrefix class="mr-2 opacity-60">lock</mat-icon>
+          <input matInput [type]="hidePassword() ? 'password' : 'text'" formControlName="password" autocomplete="new-password">
+          <button mat-icon-button matSuffix type="button" (click)="hidePassword.set(!hidePassword())">
+            <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (form.get('password')?.touched && form.get('password')?.errors?.['required']) {
+            <mat-error>La contraseña es requerida.</mat-error>
+          }
+          @if (form.get('password')?.touched && form.get('password')?.errors?.['minlength']) {
+            <mat-error>Mínimo 6 caracteres.</mat-error>
+          }
+        </mat-form-field>
+
+        <div class="grid grid-cols-2 gap-2">
+          <mat-form-field class="w-full">
+            <mat-label>Tipo documento</mat-label>
+            <mat-select formControlName="tipo_documento">
+              @for (t of TIPOS_DOC; track t.value) {
+                <mat-option [value]="t.value">{{ t.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field class="w-full">
+            <mat-label>Número de documento</mat-label>
+            <input matInput formControlName="numero_documento">
+            @if (form.get('numero_documento')?.touched && form.get('numero_documento')?.errors?.['required']) {
+              <mat-error>Requerido.</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <mat-form-field class="w-full">
+          <mat-label>Teléfono (opcional)</mat-label>
+          <mat-icon matPrefix class="mr-2 opacity-60">phone</mat-icon>
+          <input matInput formControlName="telefono" autocomplete="tel">
+        </mat-form-field>
+
+        <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || isLoading()"
+          class="!h-12 !rounded-xl !mt-3 !text-base">
+          @if (isLoading()) {
+            <mat-progress-spinner diameter="22" mode="indeterminate"></mat-progress-spinner>
+          } @else {
+            Crear cuenta
+          }
+        </button>
+
+      </form>
+
+      <p class="text-center text-sm text-on-surface-variant mt-6">
+        ¿Ya tienes cuenta?
+        <a routerLink="/login" class="text-primary font-semibold hover:underline">Inicia sesión</a>
+      </p>
+
+    </div>
+  </div>
+</div>

@@ -1,0 +1,97 @@
+<app-page-layout
+  title="Empleados"
+  subtitle="Personal interno del hotel."
+  buttonLabel="Nuevo Empleado"
+  buttonRoute="/empleados/nuevo"
+  buttonIcon="person_add"
+  [noCard]="true">
+
+  @if (isLoading()) {
+    <div class="py-16 flex flex-col items-center gap-3 text-on-surface-variant">
+      <mat-progress-spinner diameter="36" mode="indeterminate"></mat-progress-spinner>
+      <span class="text-sm">Cargando empleados...</span>
+    </div>
+  } @else if (empleados().length === 0) {
+    <div class="py-12 text-center text-on-surface-variant">
+      <mat-icon style="font-size:3rem;width:3rem;height:3rem;opacity:.3">badge</mat-icon>
+      <p class="mt-2">No se encontraron empleados.</p>
+    </div>
+  } @else {
+    <div class="flex flex-col gap-3">
+      @for (e of empleados(); track e.id_empleado) {
+        <div class="hb-card p-4 flex items-center gap-4">
+
+          <!-- Avatar inicial -->
+          <div class="shrink-0 w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-base select-none">
+            {{ (e.usuario?.nombre ?? '?')[0].toUpperCase() }}{{ (e.usuario?.apellido ?? '')[0]?.toUpperCase() ?? '' }}
+          </div>
+
+          <!-- Info principal -->
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold text-base truncate">
+              {{ e.usuario?.nombre }} {{ e.usuario?.apellido }}
+            </p>
+            <div class="flex items-center gap-x-3 gap-y-1 flex-wrap mt-0.5">
+              <span class="text-xs text-on-surface-variant">
+                <mat-icon style="font-size:.85rem;width:.85rem;height:.85rem;vertical-align:middle">badge</mat-icon>
+                {{ e.usuario?.tipo_documento }} {{ e.usuario?.numero_documento }}
+              </span>
+              @if (e.usuario?.email) {
+                <span class="text-xs text-on-surface-variant truncate">
+                  <mat-icon style="font-size:.85rem;width:.85rem;height:.85rem;vertical-align:middle">mail</mat-icon>
+                  {{ e.usuario.email }}
+                </span>
+              }
+            </div>
+          </div>
+
+          <!-- Badges -->
+          <div class="hidden sm:flex items-center gap-2 shrink-0">
+            @if (e.perfil) {
+              <span class="hb-badge hb-badge-secondary">{{ e.perfil.nombre }}</span>
+            }
+            @if (e.activo) {
+              <span class="hb-badge hb-badge-success">Activo</span>
+            } @else {
+              <span class="hb-badge hb-badge-error">Inactivo</span>
+            }
+          </div>
+
+          <!-- Acciones -->
+          <div class="flex items-center shrink-0 gap-1">
+            <a mat-icon-button [routerLink]="['/empleados/editar', e.id_empleado]" matTooltip="Editar">
+              <mat-icon>edit</mat-icon>
+            </a>
+            <button mat-icon-button color="warn" (click)="confirmDelete(e.id_empleado)" matTooltip="Eliminar">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Badges móvil -->
+        <div class="sm:hidden flex gap-2 px-1 -mt-2 mb-1">
+          @if (e.perfil) {
+            <span class="hb-badge hb-badge-secondary text-[10px]">{{ e.perfil.nombre }}</span>
+          }
+          @if (e.activo) {
+            <span class="hb-badge hb-badge-success text-[10px]">Activo</span>
+          } @else {
+            <span class="hb-badge hb-badge-error text-[10px]">Inactivo</span>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <mat-paginator
+    [length]="pagination.total"
+    [pageSize]="pagination.limit"
+    [pageIndex]="pagination.pageIndex"
+    [pageSizeOptions]="pagination.pageSizeOptions"
+    (page)="onPageChange($event)"
+    showFirstLastButtons
+    class="border-t border-outline-variant mt-4">
+  </mat-paginator>
+
+</app-page-layout>

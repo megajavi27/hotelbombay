@@ -1,0 +1,217 @@
+<app-page-layout
+  title="Pagos"
+  subtitle="Comprobantes y pagos de reservas."
+  [noCard]="true">
+
+  <!-- Barra de búsqueda -->
+  <div class="hb-card-wrapper p-4 mb-3">
+    <div class="flex items-end gap-3 flex-wrap">
+      <div class="flex-1 min-w-48">
+        <mat-form-field class="w-full" appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Buscar cliente</mat-label>
+          <mat-icon matPrefix class="mr-1 text-on-surface-variant">search</mat-icon>
+          <input matInput [formControl]="busqueda" placeholder="Nombre, apellido, documento o email…">
+          @if (busqueda.value) {
+            <button matSuffix mat-icon-button (click)="limpiarBusqueda()">
+              <mat-icon>close</mat-icon>
+            </button>
+          }
+        </mat-form-field>
+      </div>
+      @if (filtrosActivos) {
+        <button mat-stroked-button (click)="limpiarBusqueda()" class="!text-sm mb-0.5">
+          <mat-icon>clear</mat-icon> Limpiar
+        </button>
+        <span class="text-xs text-on-surface-variant mb-1.5">
+          {{ pagination.total }} resultado{{ pagination.total !== 1 ? 's' : '' }}
+        </span>
+      }
+    </div>
+  </div>
+
+  <!-- Filtros rápidos -->
+  <div class="flex flex-wrap gap-2 mb-4">
+    @for (f of FILTROS; track f.value) {
+      <button type="button"
+              (click)="setFiltro(f.value)"
+              class="px-3 py-1.5 rounded-full text-sm font-medium border transition-colors inline-flex items-center gap-1.5"
+              [class.bg-primary]="filtroEstado() === f.value"
+              [class.text-on-primary]="filtroEstado() === f.value"
+              [class.border-primary]="filtroEstado() === f.value"
+              [class.bg-surface]="filtroEstado() !== f.value"
+              [class.text-on-surface-variant]="filtroEstado() !== f.value"
+              [class.border-outline-variant]="filtroEstado() !== f.value">
+        {{ f.label }}
+        @if (f.value === 'PENDIENTE_REVISION') {
+          @let count = pagos().filter(p => p.estado === 'PENDIENTE_REVISION').length;
+          @if (count > 0) {
+            <span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-400 text-white text-[10px] font-bold">{{ count }}</span>
+          }
+        }
+        @if (f.value === 'PENDIENTE') {
+          @let count = pagos().filter(p => p.estado === 'PENDIENTE').length;
+          @if (count > 0) {
+            <span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-500 text-white text-[10px] font-bold">{{ count }}</span>
+          }
+        }
+      </button>
+    }
+  </div>
+
+  @if (isLoading()) {
+    <div class="py-16 flex flex-col items-center gap-3 text-on-surface-variant">
+      <mat-progress-spinner diameter="36" mode="indeterminate"></mat-progress-spinner>
+      <span class="text-sm">Cargando pagos...</span>
+    </div>
+  } @else if (pagosFiltrados.length === 0) {
+    <div class="py-12 text-center text-on-surface-variant">
+      <mat-icon style="font-size:3rem;width:3rem;height:3rem;opacity:.3">receipt_long</mat-icon>
+      <p class="mt-2">No se encontraron pagos.</p>
+    </div>
+  } @else {
+    <div class="flex flex-col gap-3">
+      @for (p of pagosFiltrados; track p.id_pago) {
+        <div class="hb-card p-4 flex items-start gap-4"
+             [class.border-l-4]="p.estado === 'PENDIENTE_REVISION' || p.estado === 'PENDIENTE'"
+             [class.border-amber-400]="p.estado === 'PENDIENTE_REVISION'"
+             [class.border-green-400]="p.estado === 'PENDIENTE'">
+
+          <!-- Icono -->
+          <div class="shrink-0 w-11 h-11 rounded-xl flex items-center justify-center mt-0.5"
+               [class.bg-amber-100]="p.estado === 'PENDIENTE_REVISION'"
+               [class.bg-green-100]="p.estado === 'PENDIENTE'"
+               [class.bg-primary/10]="p.estado !== 'PENDIENTE_REVISION' && p.estado !== 'PENDIENTE'">
+            <mat-icon [class.text-amber-600]="p.estado === 'PENDIENTE_REVISION'"
+                      [class.text-green-600]="p.estado === 'PENDIENTE'"
+                      [class.text-primary]="p.estado !== 'PENDIENTE_REVISION' && p.estado !== 'PENDIENTE'">
+              {{ p.estado === 'PENDIENTE' ? 'pending_actions' : p.metodo_pago === 'TRANSFERENCIA' ? 'account_balance' : 'payments' }}
+            </mat-icon>
+          </div>
+
+          <!-- Info principal -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-start justify-between gap-2 flex-wrap">
+              <div class="min-w-0 flex-1">
+
+                <!-- Cliente -->
+                @if (p.reserva?.cliente?.usuario) {
+                  <p class="font-semibold text-base">
+                    {{ p.reserva.cliente.usuario.nombre }} {{ p.reserva.cliente.usuario.apellido }}
+                  </p>
+                  <p class="text-xs text-on-surface-variant">
+                    {{ p.reserva.cliente.usuario.numero_documento }}
+                    @if (p.reserva.cliente.usuario.email) {
+                      · {{ p.reserva.cliente.usuario.email }}
+                    }
+                  </p>
+                } @else {
+                  <p class="font-semibold text-base">Pago #{{ p.id_pago }}</p>
+                }
+
+                <!-- Habitación + reserva -->
+                <div class="flex items-center gap-x-3 gap-y-1 flex-wrap mt-1">
+                  @if (p.reserva?.habitacion) {
+                    <span class="text-xs text-on-surface-variant inline-flex items-center gap-0.5">
+                      <mat-icon style="font-size:.85rem;width:.85rem;height:.85rem">bed</mat-icon>
+                      Hab. {{ p.reserva.habitacion.numero }}
+                    </span>
+                  }
+                  @if (p.id_reserva) {
+                    <span class="text-xs text-on-surface-variant">Reserva #{{ p.id_reserva }}</span>
+                  }
+                  @if (p.metodo_pago) {
+                    <span class="text-xs text-on-surface-variant inline-flex items-center gap-0.5">
+                      <mat-icon style="font-size:.85rem;width:.85rem;height:.85rem">
+                        {{ p.metodo_pago === 'TRANSFERENCIA' ? 'account_balance' : 'credit_card' }}
+                      </mat-icon>
+                      {{ p.metodo_pago === 'TRANSFERENCIA' ? 'Transferencia' : 'Tarjeta' }}
+                    </span>
+                  }
+                  @if (p.referencia) {
+                    <span class="text-xs text-on-surface-variant truncate inline-flex items-center gap-0.5">
+                      <mat-icon style="font-size:.85rem;width:.85rem;height:.85rem">tag</mat-icon>
+                      {{ p.referencia }}
+                    </span>
+                  }
+                </div>
+
+                <!-- Comprobante de transferencia -->
+                @if (p.comprobante_url) {
+                  <a [href]="apiUrl + p.comprobante_url" target="_blank"
+                     class="inline-flex items-center gap-1 mt-1.5 text-xs text-primary hover:underline">
+                    <mat-icon style="font-size:.85rem;width:.85rem;height:.85rem">attach_file</mat-icon>
+                    Ver comprobante
+                  </a>
+                }
+
+                <!-- Motivo de rechazo -->
+                @if (p.estado === 'RECHAZADO' && p.motivo_rechazo) {
+                  <div class="mt-1.5 flex items-start gap-1 text-xs text-error">
+                    <mat-icon style="font-size:.85rem;width:.85rem;height:.85rem;margin-top:1px;shrink:0">info</mat-icon>
+                    <span>{{ p.motivo_rechazo }}</span>
+                  </div>
+                }
+              </div>
+
+              <span class="hb-badge {{ estadoBadge(p.estado) }} shrink-0">
+                {{ estadoLabel(p.estado) }}
+              </span>
+            </div>
+
+            <div class="mt-2 flex items-center justify-between gap-2 flex-wrap">
+              <span class="font-bold text-lg text-primary">${{ p.monto }}</span>
+
+              <div class="flex items-center gap-1 flex-wrap">
+
+                <!-- PENDIENTE → cobrar en efectivo -->
+                @if (p.estado === 'PENDIENTE') {
+                  <button mat-flat-button
+                          (click)="cobrarEfectivo(p.id_pago)"
+                          class="!text-xs !py-1 !px-3 !h-auto !bg-green-600 !text-white"
+                          matTooltip="Registrar cobro en efectivo">
+                    <mat-icon style="font-size:1rem;width:1rem;height:1rem">payments</mat-icon>
+                    Cobrar en efectivo
+                  </button>
+                }
+
+                <!-- PENDIENTE_REVISION → validar o rechazar comprobante -->
+                @if (p.estado === 'PENDIENTE_REVISION') {
+                  <button mat-flat-button color="primary"
+                          (click)="validar(p.id_pago)"
+                          class="!text-xs !py-1 !px-3 !h-auto"
+                          matTooltip="Aprobar transferencia">
+                    <mat-icon style="font-size:1rem;width:1rem;height:1rem">check_circle</mat-icon>
+                    Validar
+                  </button>
+                  <button mat-stroked-button color="warn"
+                          (click)="rechazar(p.id_pago)"
+                          class="!text-xs !py-1 !px-3 !h-auto"
+                          matTooltip="Rechazar comprobante">
+                    <mat-icon style="font-size:1rem;width:1rem;height:1rem">cancel</mat-icon>
+                    Rechazar
+                  </button>
+                }
+
+                <button mat-icon-button color="warn" (click)="confirmDelete(p.id_pago)" matTooltip="Eliminar">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      }
+    </div>
+  }
+
+  <mat-paginator
+    [length]="pagination.total"
+    [pageSize]="pagination.limit"
+    [pageIndex]="pagination.pageIndex"
+    [pageSizeOptions]="pagination.pageSizeOptions"
+    (page)="onPageChange($event)"
+    showFirstLastButtons
+    class="border-t border-outline-variant mt-4">
+  </mat-paginator>
+
+</app-page-layout>

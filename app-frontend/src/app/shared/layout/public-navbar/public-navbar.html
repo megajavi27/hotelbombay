@@ -1,0 +1,42 @@
+<nav class="fixed top-0 left-0 w-full z-50 bg-surface/80 backdrop-blur-md transition-all duration-300">
+  <div class="flex justify-between items-center w-full px-6 lg:px-16 py-4 max-w-7xl mx-auto">
+    <a routerLink="/inicio" class="font-display text-2xl font-semibold tracking-tight text-primary">Hotel Bombay</a>
+
+    <div class="hidden md:flex items-center gap-8">
+      <a routerLink="/inicio" routerLinkActive="!text-primary !border-secondary" [routerLinkActiveOptions]="{ exact: true }"
+         class="font-medium text-sm text-on-surface-variant hover:text-primary border-b-2 border-transparent pb-1 transition-colors">Inicio</a>
+      <a routerLink="/habitaciones" routerLinkActive="!text-primary !border-secondary"
+         class="font-medium text-sm text-on-surface-variant hover:text-primary border-b-2 border-transparent pb-1 transition-colors">Habitaciones</a>
+      <a routerLink="/experiencias" routerLinkActive="!text-primary !border-secondary"
+         class="font-medium text-sm text-on-surface-variant hover:text-primary border-b-2 border-transparent pb-1 transition-colors">Experiencias</a>
+      <a routerLink="/contactos" routerLinkActive="!text-primary !border-secondary"
+         class="font-medium text-sm text-on-surface-variant hover:text-primary border-b-2 border-transparent pb-1 transition-colors">Contacto</a>
+    </div>
+
+    <div class="hidden md:flex items-center gap-4">
+      <a routerLink="/login" class="font-medium text-sm text-primary hover:text-secondary transition-all">Iniciar Sesión</a>
+      <a routerLink="/login" class="bg-primary text-on-primary px-6 py-2.5 rounded-full font-medium text-sm hover:bg-primary-container transition-all shadow-md active:scale-95">Reservar Ahora</a>
+    </div>
+
+    <button (click)="toggleMobileMenu()" class="md:hidden text-primary" aria-label="Abrir menú">
+      <span class="material-symbols-outlined text-3xl">{{ mobileMenuOpen() ? 'close' : 'menu' }}</span>
+    </button>
+  </div>
+
+  @if (mobileMenuOpen()) {
+    <div class="md:hidden bg-surface border-t border-outline-variant/30 px-6 py-4 flex flex-col gap-4">
+      <a routerLink="/inicio" routerLinkActive="!text-primary" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobileMenu()"
+         class="font-medium text-sm text-on-surface-variant hover:text-primary transition-colors">Inicio</a>
+      <a routerLink="/habitaciones" routerLinkActive="!text-primary" (click)="closeMobileMenu()"
+         class="font-medium text-sm text-on-surface-variant hover:text-primary transition-colors">Habitaciones</a>
+      <a routerLink="/experiencias" routerLinkActive="!text-primary" (click)="closeMobileMenu()"
+         class="font-medium text-sm text-on-surface-variant hover:text-primary transition-colors">Experiencias</a>
+      <a routerLink="/contactos" routerLinkActive="!text-primary" (click)="closeMobileMenu()"
+         class="font-medium text-sm text-on-surface-variant hover:text-primary transition-colors">Contacto</a>
+      <hr class="border-outline-variant/30" />
+      <a routerLink="/login" (click)="closeMobileMenu()" class="font-medium text-sm text-primary">Iniciar Sesión</a>
+      <a routerLink="/login" (click)="closeMobileMenu()"
+         class="bg-primary text-on-primary px-6 py-2.5 rounded-full font-medium text-sm text-center hover:bg-primary-container transition-all shadow-md">Reservar Ahora</a>
+    </div>
+  }
+</nav>

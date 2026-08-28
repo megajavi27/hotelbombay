@@ -1,0 +1,98 @@
+<!-- Capa a pantalla completa. El clic en el fondo cierra; el de la foto hace zoom. -->
+<div
+  class="fixed inset-0 z-[1200] bg-black/92 flex flex-col select-none"
+  role="dialog"
+  aria-modal="true"
+  [attr.aria-label]="alt"
+  (click)="cerrar()"
+  (mousemove)="onRatonMueve($event)"
+  (mouseup)="onRatonArriba()"
+  (mouseleave)="onRatonArriba()">
+
+  <!-- Barra superior -->
+  <div class="flex items-center justify-between gap-2 px-3 py-2 text-white/90 shrink-0" (click)="$event.stopPropagation()">
+    <span class="text-sm tabular-nums pl-1">
+      @if (hayVarias()) {
+        {{ indice() + 1 }} / {{ imagenes.length }}
+      }
+    </span>
+
+    <div class="flex items-center gap-1">
+      <button mat-icon-button type="button" class="!text-white" matTooltip="Alejar (−)"
+              [disabled]="escala() <= escalaMin" (click)="alejar($event)">
+        <mat-icon>zoom_out</mat-icon>
+      </button>
+
+      <span class="text-xs tabular-nums w-12 text-center">{{ (escala() * 100).toFixed(0) }}%</span>
+
+      <button mat-icon-button type="button" class="!text-white" matTooltip="Acercar (+)"
+              [disabled]="escala() >= escalaMax" (click)="acercar($event)">
+        <mat-icon>zoom_in</mat-icon>
+      </button>
+
+      <button mat-icon-button type="button" class="!text-white" matTooltip="Tamaño original (0)"
+              [disabled]="!hayZoom()" (click)="resetearZoom($event)">
+        <mat-icon>center_focus_strong</mat-icon>
+      </button>
+
+      <button mat-icon-button type="button" class="!text-white ml-1" matTooltip="Cerrar (Esc)" (click)="cerrar()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Foto -->
+  <div class="flex-1 min-h-0 relative flex items-center justify-center overflow-hidden">
+
+    @if (hayVarias()) {
+      <button mat-icon-button type="button"
+              class="!absolute left-2 sm:left-4 z-10 !text-white !bg-black/40 hover:!bg-black/60"
+              matTooltip="Anterior (←)" (click)="anterior($event)">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+    }
+
+    <img
+      [src]="actual()"
+      [alt]="alt"
+      class="max-w-full max-h-full object-contain transition-transform duration-150 will-change-transform"
+      [class.cursor-zoom-in]="!hayZoom()"
+      [class.cursor-grab]="hayZoom()"
+      [style.transform]="transformacion()"
+      draggable="false"
+      (click)="alternarZoom($event)"
+      (wheel)="onRueda($event)"
+      (mousedown)="onRatonAbajo($event)">
+
+    @if (hayVarias()) {
+      <button mat-icon-button type="button"
+              class="!absolute right-2 sm:right-4 z-10 !text-white !bg-black/40 hover:!bg-black/60"
+              matTooltip="Siguiente (→)" (click)="siguiente($event)">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+    }
+  </div>
+
+  <!-- Miniaturas -->
+  @if (hayVarias()) {
+    <div class="shrink-0 flex justify-center gap-1.5 overflow-x-auto px-3 py-3" (click)="$event.stopPropagation()">
+      @for (url of imagenes; track url; let i = $index) {
+        <button
+          type="button"
+          class="shrink-0 w-16 h-12 rounded-md overflow-hidden border-2 transition-opacity"
+          [class.border-white]="i === indice()"
+          [class.border-transparent]="i !== indice()"
+          [class.opacity-50]="i !== indice()"
+          [attr.aria-label]="'Ver foto ' + (i + 1)"
+          [attr.aria-current]="i === indice() ? 'true' : null"
+          (click)="irA(i, $event)">
+          <img [src]="url" [alt]="alt + ' — miniatura ' + (i + 1)" class="w-full h-full object-cover" draggable="false">
+        </button>
+      }
+    </div>
+  }
+
+  <p class="shrink-0 text-center text-white/45 text-[11px] pb-2 hidden sm:block">
+    Clic en la foto para ampliar · arrastra para moverla · rueda del ratón para el zoom · Esc para cerrar
+  </p>
+</div>

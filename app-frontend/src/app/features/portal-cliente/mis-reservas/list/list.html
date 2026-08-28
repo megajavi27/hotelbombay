@@ -1,0 +1,199 @@
+<div class="max-w-4xl mx-auto">
+
+  <div class="mb-5 flex items-center justify-between gap-3 flex-wrap">
+    <div>
+      <h2 class="font-display text-3xl font-bold text-primary">Mis Reservas</h2>
+      <p class="text-sm text-on-surface-variant mt-0.5">Historial de todas tus reservas en Hotel Bombay.</p>
+    </div>
+    <a mat-flat-button color="primary" routerLink="/mis-reservas/nueva">
+      <mat-icon>add</mat-icon>
+      Nueva Reserva
+    </a>
+  </div>
+
+  <!-- ── Chips de estado ─────────────────────────────────────────── -->
+  <div class="flex flex-wrap gap-2 mb-3">
+    @for (e of ESTADOS; track e.value) {
+      <button type="button"
+              (click)="setEstado(e.value)"
+              class="px-3 py-1.5 rounded-full text-sm font-medium border transition-colors inline-flex items-center gap-1.5"
+              [class.bg-primary]="filtroEstado() === e.value"
+              [class.text-on-primary]="filtroEstado() === e.value"
+              [class.border-primary]="filtroEstado() === e.value"
+              [class.bg-surface]="filtroEstado() !== e.value"
+              [class.text-on-surface-variant]="filtroEstado() !== e.value"
+              [class.border-outline-variant]="filtroEstado() !== e.value">
+        {{ e.label }}
+      </button>
+    }
+  </div>
+
+  <!-- ── Filtro de fechas ───────────────────────────────────────── -->
+  <div class="bg-white border border-slate-100 rounded-2xl p-4 mb-4 shadow-sm">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Check-in desde</mat-label>
+        <input matInput [matDatepicker]="pickerFI" [formControl]="fechaInicio">
+        <mat-datepicker-toggle matIconSuffix [for]="pickerFI"></mat-datepicker-toggle>
+        <mat-datepicker #pickerFI></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Check-out hasta</mat-label>
+        <input matInput [matDatepicker]="pickerFF" [formControl]="fechaFin">
+        <mat-datepicker-toggle matIconSuffix [for]="pickerFF"></mat-datepicker-toggle>
+        <mat-datepicker #pickerFF></mat-datepicker>
+      </mat-form-field>
+    </div>
+
+    <div class="flex items-center gap-2 mt-3 flex-wrap">
+      <button mat-flat-button color="primary" (click)="buscarFechas()" class="!text-sm">
+        <mat-icon>filter_list</mat-icon> Aplicar fechas
+      </button>
+      @if (filtrosActivos) {
+        <button mat-stroked-button (click)="limpiarFiltros()" class="!text-sm">
+          <mat-icon>clear</mat-icon> Limpiar filtros
+        </button>
+        <span class="text-xs text-on-surface-variant">
+          {{ pagination.total }} reserva{{ pagination.total !== 1 ? 's' : '' }}
+        </span>
+      }
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="py-16 flex flex-col items-center gap-3 text-on-surface-variant">
+      <mat-progress-spinner diameter="36" mode="indeterminate"></mat-progress-spinner>
+      <span class="text-sm">Cargando reservas...</span>
+    </div>
+  } @else if (reservas().length === 0) {
+    <div class="hb-card py-16 text-center text-on-surface-variant">
+      <mat-icon style="font-size:3rem;width:3rem;height:3rem;opacity:.35">event_busy</mat-icon>
+      @if (filtrosActivos) {
+        <p class="mt-3">No se encontraron reservas con esos filtros.</p>
+        <button mat-stroked-button (click)="limpiarFiltros()" class="mt-4 !text-sm">Limpiar filtros</button>
+      } @else {
+        <p class="mt-3">Aún no tienes reservas registradas.</p>
+        <a mat-flat-button color="primary" routerLink="/mis-reservas/nueva" class="mt-4">Hacer mi primera reserva</a>
+      }
+    </div>
+  } @else {
+    <div class="flex flex-col gap-4">
+      @for (r of reservas(); track r.id_reserva) {
+        <div class="hb-card p-5"
+             [class.border-l-4]="enRevision(r) || pagoRechazado(r) || pagoPendiente(r)"
+             [class.border-amber-400]="enRevision(r)"
+             [class.border-red-400]="pagoRechazado(r)"
+             [class.border-blue-400]="pagoPendiente(r) && !pagoRechazado(r) && !enRevision(r)">
+          <div class="flex flex-col sm:flex-row sm:items-start gap-4">
+            <!-- Icono -->
+            <div class="shrink-0 w-12 h-12 rounded-xl flex items-center justify-center"
+                 [class.bg-amber-100]="enRevision(r)"
+                 [class.bg-red-100]="pagoRechazado(r)"
+                 [class.bg-blue-50]="pagoPendiente(r) && !pagoRechazado(r) && !enRevision(r)"
+                 [class.bg-primary/10]="!enRevision(r) && !pagoRechazado(r) && !pagoPendiente(r)">
+              <mat-icon [class.text-amber-600]="enRevision(r)"
+                        [class.text-red-600]="pagoRechazado(r)"
+                        [class.text-blue-500]="pagoPendiente(r) && !pagoRechazado(r) && !enRevision(r)"
+                        [class.text-primary]="!enRevision(r) && !pagoRechazado(r) && !pagoPendiente(r)">hotel</mat-icon>
+            </div>
+
+            <!-- Info principal -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-2 flex-wrap">
+                <div>
+                  <p class="font-semibold text-base">
+                    Habitación {{ r.habitacion?.numero ?? '#' + r.id_habitacion }}
+                    @if (r.habitacion?.tipoHabitacion?.nombre) {
+                      <span class="text-on-surface-variant font-normal text-sm">
+                        — {{ r.habitacion.tipoHabitacion.nombre }}
+                      </span>
+                    }
+                  </p>
+                  <p class="text-sm text-on-surface-variant mt-0.5">
+                    <mat-icon style="font-size:1rem;width:1rem;height:1rem;vertical-align:middle">calendar_today</mat-icon>
+                    {{ r.fecha_inicio }} → {{ r.fecha_fin }}
+                    @if (r.numero_huespedes) {
+                      · {{ r.numero_huespedes }} huésped{{ r.numero_huespedes > 1 ? 'es' : '' }}
+                    }
+                  </p>
+                  @if (r.observaciones) {
+                    <p class="text-xs text-on-surface-variant mt-1 italic">{{ r.observaciones }}</p>
+                  }
+                </div>
+                <span [class]="estadoClass[r.estado] ?? 'hb-badge'">{{ estadoLabel[r.estado] ?? r.estado }}</span>
+              </div>
+
+              <!-- Banners de estado de pago -->
+              @if (pagoPendiente(r) && !pagoRechazado(r) && !enRevision(r)) {
+                <div class="mt-2 flex items-center gap-2 rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 text-xs text-blue-800">
+                  <mat-icon style="font-size:1rem;width:1rem;height:1rem;shrink:0">payment</mat-icon>
+                  <span>Esta reserva tiene un pago pendiente. Puedes pagar con tarjeta o transferencia bancaria.</span>
+                </div>
+              }
+              @if (enRevision(r)) {
+                <div class="mt-2 flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
+                  <mat-icon style="font-size:1rem;width:1rem;height:1rem;shrink:0">hourglass_top</mat-icon>
+                  <span>Tu comprobante está siendo revisado por el hotel. Te confirmaremos en 24–48 h hábiles.</span>
+                </div>
+              }
+              @if (pagoRechazado(r)) {
+                <div class="mt-2 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-800">
+                  <div class="flex items-center gap-1.5 font-semibold mb-0.5">
+                    <mat-icon style="font-size:1rem;width:1rem;height:1rem">cancel</mat-icon>
+                    Comprobante rechazado
+                  </div>
+                  @if (r.pago?.motivo_rechazo) {
+                    <p class="mt-0.5">{{ r.pago.motivo_rechazo }}</p>
+                  }
+                </div>
+              }
+
+              <div class="mt-3 flex items-center justify-between gap-2 flex-wrap">
+                <span class="text-xs text-on-surface-variant">Reserva #{{ r.id_reserva }}</span>
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-lg text-primary">${{ r.total | number:'1.2-2' }}</span>
+
+                  @if (puedesPagar(r)) {
+                    <button mat-flat-button color="primary" (click)="pagar(r)" class="!text-xs !px-3">
+                      <mat-icon style="font-size:1rem">payment</mat-icon>
+                      {{ pagoRechazado(r) ? 'Pagar de nuevo' : pagoPendiente(r) ? 'Pagar ahora' : 'Pagar' }}
+                    </button>
+                  }
+
+                  @if (enRevision(r)) {
+                    <span class="text-xs text-amber-700 font-medium flex items-center gap-1">
+                      <mat-icon style="font-size:.85rem;width:.85rem;height:.85rem">pending</mat-icon>
+                      En revisión
+                    </span>
+                  }
+
+                  @if (puedesCancelar(r)) {
+                    <button mat-icon-button color="warn" (click)="cancelar(r)" matTooltip="Cancelar reserva">
+                      <mat-icon>cancel</mat-icon>
+                    </button>
+                  } @else if (enRevision(r)) {
+                    <button mat-icon-button disabled matTooltip="No puedes cancelar mientras hay un comprobante en revisión">
+                      <mat-icon>block</mat-icon>
+                    </button>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <mat-paginator
+      [length]="pagination.total"
+      [pageSize]="pagination.limit"
+      [pageIndex]="pagination.pageIndex"
+      [pageSizeOptions]="pagination.pageSizeOptions"
+      (page)="onPageChange($event)"
+      showFirstLastButtons
+      class="border-t border-outline-variant mt-4">
+    </mat-paginator>
+  }
+
+</div>

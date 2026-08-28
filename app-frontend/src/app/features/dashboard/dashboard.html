@@ -1,0 +1,165 @@
+<app-page-layout
+  title="Panel de Control"
+  subtitle="Vista general de operaciones en tiempo real."
+  [noCard]="true">
+
+@if (isLoading()) {
+  <div class="py-24 flex flex-col items-center gap-4 text-on-surface-variant">
+    <mat-progress-spinner diameter="44" mode="indeterminate"></mat-progress-spinner>
+    <span class="text-sm font-inter">Cargando estadísticas…</span>
+  </div>
+
+} @else if (stats()) {
+
+  <!-- ── KPIs ──────────────────────────────────────────────────── -->
+  <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-5 font-inter">
+
+    <!-- Reservas -->
+    <div class="hb-card p-5 flex flex-col gap-1">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-2 bg-primary/10">
+        <mat-icon class="text-primary" style="font-size:17px;width:17px;height:17px">event_available</mat-icon>
+      </div>
+      <p class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Reservas</p>
+      <p class="font-stat text-3xl font-bold leading-none text-primary">{{ stats()!.reservas.total }}</p>
+      <p class="text-xs text-on-surface-variant mt-1">totales registradas</p>
+    </div>
+
+    <!-- Ingresos — tarjeta destacada navy -->
+    <div class="relative overflow-hidden rounded-2xl p-5 flex flex-col gap-1 shadow-premium hover:shadow-premium-hover transition-shadow duration-300 bg-gradient-primary">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-2 bg-secondary-container/20">
+        <mat-icon class="text-secondary-container" style="font-size:17px;width:17px;height:17px">payments</mat-icon>
+      </div>
+      <p class="text-xs font-semibold uppercase tracking-wider text-secondary-container/80">Ingresos</p>
+      <p class="font-stat text-2xl font-bold leading-none text-secondary-container">${{ stats()!.pagos.totalIngresos | number: '1.2-2' }}</p>
+      <p class="text-xs text-on-primary/50 mt-1">ingresos totales</p>
+    </div>
+
+    <!-- Habitaciones -->
+    <div class="hb-card p-5 flex flex-col gap-1">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-2 bg-green-100">
+        <mat-icon class="text-green-700" style="font-size:17px;width:17px;height:17px">meeting_room</mat-icon>
+      </div>
+      <p class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Disponibles</p>
+      <div class="flex items-end gap-1 leading-none">
+        <p class="font-stat text-3xl font-bold text-green-700">{{ stats()!.habitaciones.porEstado['DISPONIBLE'] || 0 }}</p>
+        <p class="font-stat text-base text-outline-variant mb-0.5">/ {{ stats()!.habitaciones.total }}</p>
+      </div>
+      <p class="text-xs text-on-surface-variant mt-1">habitaciones libres</p>
+    </div>
+
+    <!-- Clientes -->
+    <div class="hb-card p-5 flex flex-col gap-1">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-2 bg-blue-100">
+        <mat-icon class="text-blue-700" style="font-size:17px;width:17px;height:17px">groups</mat-icon>
+      </div>
+      <p class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Clientes</p>
+      <p class="font-stat text-3xl font-bold leading-none text-blue-700">{{ stats()!.totales.clientes }}</p>
+      <p class="text-xs text-on-surface-variant mt-1">registrados</p>
+    </div>
+
+    <!-- Empleados -->
+    <div class="hb-card p-5 flex flex-col gap-1">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-2 bg-amber-100">
+        <mat-icon class="text-amber-700" style="font-size:17px;width:17px;height:17px">badge</mat-icon>
+      </div>
+      <p class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Empleados</p>
+      <p class="font-stat text-3xl font-bold leading-none text-amber-700">{{ stats()!.totales.empleados }}</p>
+      <p class="text-xs text-on-surface-variant mt-1">activos</p>
+    </div>
+
+    <!-- Recomendaciones IA -->
+    <div class="hb-card p-5 flex flex-col gap-1">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-2 bg-purple-100">
+        <mat-icon class="text-purple-700" style="font-size:17px;width:17px;height:17px">smart_toy</mat-icon>
+      </div>
+      <p class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">IA activa</p>
+      <p class="font-stat text-3xl font-bold leading-none text-purple-700">{{ stats()!.totales.recomendacionesActivas }}</p>
+      <p class="text-xs text-on-surface-variant mt-1">recomendaciones</p>
+    </div>
+
+  </div>
+
+  <!-- ── Gráficos fila 1 ───────────────────────────────────────── -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5 font-inter">
+
+    <div class="hb-card-wrapper">
+      <div class="px-6 pt-5 pb-4 border-b border-outline-variant/30">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-semibold text-primary">Ocupación de habitaciones</p>
+            <p class="text-xs text-on-surface-variant mt-0.5">Estado actual del inventario</p>
+          </div>
+          <span class="hb-badge hb-badge-info">En vivo</span>
+        </div>
+      </div>
+      <div class="p-5 h-56">
+        <canvas baseChart [data]="habitacionesChartData" [options]="barOptions" type="bar"></canvas>
+      </div>
+    </div>
+
+    <div class="hb-card-wrapper">
+      <div class="px-6 pt-5 pb-4 border-b border-outline-variant/30">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-semibold text-primary">Reservas por estado</p>
+            <p class="text-xs text-on-surface-variant mt-0.5">Distribución del ciclo de reservas</p>
+          </div>
+          <span class="hb-badge hb-badge-secondary">Total: {{ stats()!.reservas.total }}</span>
+        </div>
+      </div>
+      <div class="p-5 h-56">
+        <canvas baseChart [data]="reservasEstadoChartData" [options]="barOptions" type="bar"></canvas>
+      </div>
+    </div>
+
+    <div class="hb-card-wrapper">
+      <div class="px-6 pt-5 pb-4 border-b border-outline-variant/30">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-semibold text-primary">Ingresos por mes</p>
+            <p class="text-xs text-on-surface-variant mt-0.5">Facturación de pagos completados</p>
+          </div>
+          <span class="hb-badge hb-badge-neutral">Últ. 6 meses</span>
+        </div>
+      </div>
+      <div class="p-5 h-56">
+        <canvas baseChart [data]="ingresosMesChartData" [options]="barOptions" type="bar"></canvas>
+      </div>
+    </div>
+
+    <div class="hb-card-wrapper">
+      <div class="px-6 pt-5 pb-4 border-b border-outline-variant/30">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-semibold text-primary">Reservas por mes</p>
+            <p class="text-xs text-on-surface-variant mt-0.5">Volumen de reservas recientes</p>
+          </div>
+          <span class="hb-badge hb-badge-neutral">Últ. 6 meses</span>
+        </div>
+      </div>
+      <div class="p-5 h-56">
+        <canvas baseChart [data]="reservasMesChartData" [options]="barOptions" type="bar"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Tipos top (full-width) ────────────────────────────────── -->
+  <div class="hb-card-wrapper font-inter">
+    <div class="px-6 pt-5 pb-4 border-b border-outline-variant/30">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-semibold text-primary">Tipos de habitación más reservados</p>
+          <p class="text-xs text-on-surface-variant mt-0.5">Preferencias de los huéspedes por categoría</p>
+        </div>
+        <span class="hb-badge hb-badge-secondary">Top tipos</span>
+      </div>
+    </div>
+    <div class="p-5 h-56">
+      <canvas baseChart [data]="tiposTopChartData" [options]="horizontalBarOptions" type="bar"></canvas>
+    </div>
+  </div>
+
+}
+
+</app-page-layout>

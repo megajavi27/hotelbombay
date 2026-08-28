@@ -1,0 +1,338 @@
+<div class="max-w-4xl mx-auto">
+
+  <div class="mb-6 flex items-center gap-2">
+    <a mat-icon-button routerLink="/mis-reservas">
+      <mat-icon>arrow_back</mat-icon>
+    </a>
+    <div>
+      <h2 class="font-display text-3xl font-bold text-primary">Pagar Reserva</h2>
+      <p class="text-sm text-on-surface-variant">Elige tu método de pago preferido.</p>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="py-16 flex justify-center"><mat-progress-spinner diameter="40" mode="indeterminate"></mat-progress-spinner></div>
+  }
+
+  <!-- ─── ÉXITO: TARJETA ───────────────────────────────────────────── -->
+  @else if (pagado()) {
+    <div class="flex flex-col items-center gap-6 py-10">
+      <div class="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
+        <mat-icon class="text-green-600" style="font-size:2.5rem;width:2.5rem;height:2.5rem">check_circle</mat-icon>
+      </div>
+      <div class="text-center">
+        <h3 class="font-display text-2xl font-bold text-green-700">¡Pago exitoso!</h3>
+        <p class="text-on-surface-variant mt-1">Tu reserva ha sido confirmada.</p>
+      </div>
+      <div class="w-full max-w-sm rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 p-6 text-center">
+        <p class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-2">Código de Comprobante</p>
+        <p class="font-display text-3xl font-bold text-primary tracking-widest">{{ comprobante() }}</p>
+        <mat-divider class="!my-4"></mat-divider>
+        @if (reserva()) {
+          <div class="text-sm text-on-surface-variant space-y-1">
+            <p><span class="font-medium text-on-surface">Habitación:</span> {{ reserva().habitacion?.numero }}</p>
+            <p><span class="font-medium text-on-surface">Check-in:</span> {{ reserva().fecha_inicio }}</p>
+            <p><span class="font-medium text-on-surface">Check-out:</span> {{ reserva().fecha_fin }}</p>
+            <p><span class="font-medium text-on-surface">Total:</span> ${{ reserva().total | number:'1.2-2' }}</p>
+          </div>
+        }
+        <p class="text-xs text-on-surface-variant mt-4">Se ha enviado un comprobante a tu correo electrónico.</p>
+      </div>
+      <button mat-flat-button color="primary" (click)="irAMisReservas()">
+        <mat-icon>list</mat-icon>
+        Ver mis reservas
+      </button>
+    </div>
+  }
+
+  <!-- ─── ÉXITO: TRANSFERENCIA PENDIENTE ──────────────────────────── -->
+  @else if (pendienteRevision()) {
+    <div class="flex flex-col items-center gap-6 py-10">
+      <div class="w-20 h-20 rounded-full bg-amber-100 flex items-center justify-center">
+        <mat-icon class="text-amber-600" style="font-size:2.5rem;width:2.5rem;height:2.5rem">hourglass_top</mat-icon>
+      </div>
+      <div class="text-center">
+        <h3 class="font-display text-2xl font-bold text-amber-700">Comprobante enviado</h3>
+        <p class="text-on-surface-variant mt-1">El equipo del hotel revisará tu transferencia en breve.</p>
+      </div>
+      <div class="w-full max-w-sm rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50 p-6 text-center">
+        <mat-icon class="text-amber-500 mb-2" style="font-size:2rem;width:2rem;height:2rem">account_balance</mat-icon>
+        <p class="text-sm font-semibold text-amber-800 mb-3">¿Qué pasa ahora?</p>
+        <ol class="text-sm text-amber-700 text-left space-y-2 list-decimal list-inside">
+          <li>El hotel verifica tu comprobante (24–48 h hábiles).</li>
+          <li>Si es correcto, tu reserva cambia a <strong>Confirmada</strong>.</li>
+          <li>Si hay algún problema, te contactarán al correo registrado.</li>
+        </ol>
+      </div>
+      <button mat-flat-button color="primary" (click)="irAMisReservas()">
+        <mat-icon>list</mat-icon>
+        Ver mis reservas
+      </button>
+    </div>
+  }
+
+  <!-- ─── FORMULARIO DE PAGO ──────────────────────────────────────── -->
+  @else {
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+
+      <!-- Columna izquierda: resumen -->
+      <div class="lg:col-span-2 flex flex-col gap-5">
+
+        @if (reserva()) {
+          <div class="hb-card p-5">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-secondary mb-3">Resumen de Reserva</h3>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-on-surface-variant">Habitación</span>
+                <span class="font-medium">{{ reserva().habitacion?.numero }} — {{ reserva().habitacion?.tipoHabitacion?.nombre }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-on-surface-variant">Check-in</span>
+                <span class="font-medium">{{ reserva().fecha_inicio }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-on-surface-variant">Check-out</span>
+                <span class="font-medium">{{ reserva().fecha_fin }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-on-surface-variant">Huéspedes</span>
+                <span class="font-medium">{{ reserva().numero_huespedes }}</span>
+              </div>
+              <mat-divider class="!my-2"></mat-divider>
+              <div class="flex justify-between text-base font-bold">
+                <span>Total a pagar</span>
+                <span class="text-primary">${{ reserva().total | number:'1.2-2' }}</span>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Selector de método -->
+        <div class="hb-card p-4">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-secondary mb-3">Método de Pago</h3>
+          <div class="flex flex-col gap-2">
+            <button type="button"
+                    (click)="metodo.set('tarjeta')"
+                    class="flex items-center gap-3 p-3 rounded-xl border-2 transition-colors text-left"
+                    [class.border-primary]="metodo() === 'tarjeta'"
+                    [class.bg-primary/5]="metodo() === 'tarjeta'"
+                    [class.border-outline-variant]="metodo() !== 'tarjeta'">
+              <mat-icon [class.text-primary]="metodo() === 'tarjeta'" class="shrink-0">credit_card</mat-icon>
+              <div>
+                <p class="text-sm font-medium">Tarjeta de crédito/débito</p>
+                <p class="text-xs text-on-surface-variant">Pago inmediato (simulado)</p>
+              </div>
+            </button>
+            <button type="button"
+                    (click)="metodo.set('transferencia')"
+                    class="flex items-center gap-3 p-3 rounded-xl border-2 transition-colors text-left"
+                    [class.border-primary]="metodo() === 'transferencia'"
+                    [class.bg-primary/5]="metodo() === 'transferencia'"
+                    [class.border-outline-variant]="metodo() !== 'transferencia'">
+              <mat-icon [class.text-primary]="metodo() === 'transferencia'" class="shrink-0">account_balance</mat-icon>
+              <div>
+                <p class="text-sm font-medium">Transferencia bancaria</p>
+                <p class="text-xs text-on-surface-variant">Requiere validación del hotel</p>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tarjeta visual (solo si método = tarjeta) -->
+        @if (metodo() === 'tarjeta') {
+          <div class="rounded-2xl p-5 text-white relative overflow-hidden select-none"
+               style="background: linear-gradient(135deg, #04162e 0%, #755a34 100%); min-height: 170px;">
+            <div class="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-20"
+                 style="background: rgba(253,215,167,.4)"></div>
+            <div class="absolute -bottom-6 -left-6 w-24 h-24 rounded-full opacity-15"
+                 style="background: rgba(253,215,167,.3)"></div>
+            <div class="relative z-10 flex flex-col h-full gap-4">
+              <div class="flex items-center justify-between">
+                <span class="text-xs opacity-70 font-semibold tracking-widest uppercase">Hotel Bombay</span>
+                <div class="flex items-center gap-1 text-xs font-bold opacity-90">
+                  <mat-icon style="font-size:1rem;width:1rem;height:1rem">{{ cardInfo().icon }}</mat-icon>
+                  {{ cardInfo().tipo || '·····' }}
+                </div>
+              </div>
+              <p class="font-mono text-xl tracking-widest">{{ cardDisplay() }}</p>
+              <div class="flex justify-between items-end">
+                <div>
+                  <p class="text-[9px] uppercase opacity-60 tracking-wider">Titular</p>
+                  <p class="text-sm font-semibold tracking-wide uppercase">{{ nameDisplay() }}</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-[9px] uppercase opacity-60 tracking-wider">Vence</p>
+                  <p class="text-sm font-semibold">{{ expiryDisplay() }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Columna derecha: formulario -->
+      <div class="lg:col-span-3">
+        <mat-card class="hb-card" appearance="outlined">
+          <mat-card-content class="!p-6">
+
+            <!-- ── TARJETA ── -->
+            @if (metodo() === 'tarjeta') {
+              <h3 class="text-xs font-semibold uppercase tracking-wider text-secondary mb-4">Datos de Tarjeta</h3>
+
+              <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-1">
+                <mat-form-field class="w-full">
+                  <mat-label>Número de Tarjeta</mat-label>
+                  <input matInput formControlName="numero_tarjeta"
+                         placeholder="1234 5678 9012 3456"
+                         inputmode="numeric" maxlength="19">
+                  <mat-icon matSuffix [style.color]="cardInfo().color">credit_card</mat-icon>
+                  @if (cardInfo().tipo) { <mat-hint>{{ cardInfo().tipo }}</mat-hint> }
+                </mat-form-field>
+
+                <mat-form-field class="w-full">
+                  <mat-label>Nombre en la Tarjeta</mat-label>
+                  <input matInput formControlName="nombre_tarjeta"
+                         placeholder="Como aparece en la tarjeta" autocomplete="off">
+                  <mat-icon matSuffix>person</mat-icon>
+                </mat-form-field>
+
+                <div class="grid grid-cols-2 gap-x-4">
+                  <mat-form-field>
+                    <mat-label>Fecha de Vencimiento</mat-label>
+                    <input matInput formControlName="fecha_expiracion"
+                           placeholder="MM/AA" maxlength="5" inputmode="numeric">
+                    <mat-icon matSuffix>date_range</mat-icon>
+                  </mat-form-field>
+                  <mat-form-field>
+                    <mat-label>CVV</mat-label>
+                    <input matInput formControlName="cvv" placeholder="•••" maxlength="4"
+                           type="password" inputmode="numeric" autocomplete="off">
+                    <mat-icon matSuffix>lock</mat-icon>
+                  </mat-form-field>
+                </div>
+
+                <mat-form-field class="w-full">
+                  <mat-label>Cuotas</mat-label>
+                  <mat-select formControlName="cuotas">
+                    <mat-option [value]="1">1 cuota (sin interés)</mat-option>
+                    <mat-option [value]="3">3 cuotas</mat-option>
+                    <mat-option [value]="6">6 cuotas</mat-option>
+                    <mat-option [value]="12">12 cuotas</mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <div class="flex items-center gap-2 text-xs text-on-surface-variant mt-1 mb-4">
+                  <mat-icon style="font-size:1rem;width:1rem;height:1rem">lock</mat-icon>
+                  Pago simulado — tus datos no son enviados a ningún procesador real.
+                </div>
+
+                @if (reserva()) {
+                  <button mat-flat-button color="primary" type="submit"
+                          [disabled]="isSaving()" class="w-full !py-6 text-base">
+                    @if (!isSaving()) { <mat-icon>payment</mat-icon> }
+                    {{ isSaving() ? 'Procesando pago...' : 'Pagar $' + reserva().total }}
+                  </button>
+                }
+              </form>
+            }
+
+            <!-- ── TRANSFERENCIA ── -->
+            @if (metodo() === 'transferencia') {
+              <h3 class="text-xs font-semibold uppercase tracking-wider text-secondary mb-4">Transferencia Bancaria</h3>
+
+              <!-- Datos del banco -->
+              <div class="rounded-xl bg-surface-variant/30 border border-outline-variant p-4 mb-5 text-sm">
+                <p class="font-semibold text-on-surface mb-2 flex items-center gap-1">
+                  <mat-icon style="font-size:1rem;width:1rem;height:1rem">account_balance</mat-icon>
+                  Datos para la transferencia
+                </p>
+                <div class="space-y-1 text-on-surface-variant">
+                  <div class="flex justify-between">
+                    <span>Banco:</span>
+                    <span class="font-medium text-on-surface">{{ DATOS_BANCO.banco }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Tipo de cuenta:</span>
+                    <span class="font-medium text-on-surface">{{ DATOS_BANCO.tipo }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>N° de cuenta:</span>
+                    <span class="font-medium text-on-surface font-mono">{{ DATOS_BANCO.cuenta }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Titular:</span>
+                    <span class="font-medium text-on-surface">{{ DATOS_BANCO.titular }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>RUC:</span>
+                    <span class="font-medium text-on-surface">{{ DATOS_BANCO.ruc }}</span>
+                  </div>
+                  @if (reserva()) {
+                    <mat-divider class="!my-2"></mat-divider>
+                    <div class="flex justify-between text-base font-bold">
+                      <span class="text-on-surface">Monto exacto:</span>
+                      <span class="text-primary">${{ reserva().total | number:'1.2-2' }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Upload comprobante -->
+              <div class="flex flex-col gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-on-surface mb-1">
+                    N° de referencia / transacción <span class="text-on-surface-variant font-normal">(opcional)</span>
+                  </label>
+                  <input type="text"
+                         [formControl]="referencia"
+                         placeholder="Ej. 20240001234"
+                         class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface text-on-surface outline-none focus:border-primary transition-colors">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-on-surface mb-2">
+                    Comprobante de transferencia <span class="text-error text-xs">*</span>
+                  </label>
+                  <label class="flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-xl p-6 cursor-pointer transition-colors"
+                         [class.border-primary]="archivoComprobante()"
+                         [class.bg-primary/5]="archivoComprobante()"
+                         [class.border-outline-variant]="!archivoComprobante()">
+                    <input type="file"
+                           (change)="onFileChange($event)"
+                           accept=".jpg,.jpeg,.png,.pdf,.webp"
+                           class="hidden">
+                    @if (archivoComprobante()) {
+                      <mat-icon class="text-primary" style="font-size:2rem;width:2rem;height:2rem">check_circle</mat-icon>
+                      <p class="text-sm font-medium text-primary truncate max-w-full px-2">{{ archivoNombre() }}</p>
+                      <p class="text-xs text-on-surface-variant">Haz clic para cambiar el archivo</p>
+                    } @else {
+                      <mat-icon class="text-on-surface-variant" style="font-size:2rem;width:2rem;height:2rem">upload_file</mat-icon>
+                      <p class="text-sm text-on-surface-variant">Arrastra o haz clic para subir</p>
+                      <p class="text-xs text-on-surface-variant">JPG, PNG, PDF o WEBP · Máx. 5 MB</p>
+                    }
+                  </label>
+                </div>
+
+                <div class="flex items-start gap-2 text-xs text-on-surface-variant bg-surface-variant/20 rounded-lg p-3">
+                  <mat-icon style="font-size:1rem;width:1rem;height:1rem;shrink:0;margin-top:1px">info</mat-icon>
+                  <span>Una vez enviado, el hotel revisará tu comprobante. Tu reserva se confirmará cuando sea validado (24–48 h hábiles).</span>
+                </div>
+
+                <button mat-flat-button color="primary" type="button"
+                        (click)="onSubmitTransferencia()"
+                        [disabled]="isSaving() || !archivoComprobante()"
+                        class="w-full !py-6 text-base">
+                  @if (!isSaving()) { <mat-icon>upload</mat-icon> }
+                  {{ isSaving() ? 'Enviando comprobante...' : 'Enviar comprobante' }}
+                </button>
+              </div>
+            }
+
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+    </div>
+  }
+
+</div>

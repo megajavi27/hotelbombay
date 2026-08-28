@@ -1,0 +1,169 @@
+<div class="max-w-3xl mx-auto">
+  <div class="mb-6 flex items-center gap-2">
+    <a mat-icon-button routerLink="/clientes">
+      <mat-icon>arrow_back</mat-icon>
+    </a>
+    <h2 class="font-display text-3xl font-bold text-primary">
+      {{ isEditMode() ? 'Editar Cliente' : 'Nuevo Cliente' }}
+    </h2>
+  </div>
+
+  <!-- ───── PASO 1: BUSCAR POR DOCUMENTO (solo creación) ───── -->
+  @if (!isEditMode() && paso() === 'buscar') {
+    <mat-card class="hb-card" appearance="outlined">
+      <mat-card-content class="!p-8">
+        <p class="text-sm text-on-surface-variant mb-6">
+          Primero busca a la persona por su número de identificación para verificar si ya existe en el sistema.
+        </p>
+
+        <form [formGroup]="searchForm" (ngSubmit)="buscar()" class="flex flex-col gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+            <mat-form-field>
+              <mat-label>Tipo de Documento</mat-label>
+              <mat-select formControlName="tipo_documento">
+                <mat-option value="CEDULA">Cédula</mat-option>
+                <mat-option value="PASAPORTE">Pasaporte</mat-option>
+                <mat-option value="RUC">RUC</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Número de Documento</mat-label>
+              <input matInput formControlName="numero_documento" placeholder="0912345678">
+            </mat-form-field>
+          </div>
+
+          <div class="flex justify-end gap-3">
+            <a mat-button routerLink="/clientes">Cancelar</a>
+            <button mat-flat-button color="primary" type="submit" [disabled]="isBuscando()">
+              @if (isBuscando()) {
+                <mat-progress-spinner diameter="18" mode="indeterminate" class="inline-block mr-2"></mat-progress-spinner>
+              } @else {
+                <mat-icon>search</mat-icon>
+              }
+              Buscar
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- ───── PASO 2: FORMULARIO DE DATOS ───── -->
+  @if (isEditMode() || paso() === 'datos') {
+
+    <!-- Banner: usuario hallado (empleado registrado) -->
+    @if (!isEditMode() && usuarioHallado()) {
+      <div class="mb-4 flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+        <mat-icon class="text-blue-500 shrink-0 mt-0.5" style="font-size:1.1rem;width:1.1rem;height:1.1rem">info</mat-icon>
+        <div>
+          <strong>{{ usuarioHallado()!.nombre }} {{ usuarioHallado()!.apellido }}</strong> ya existe en el sistema
+          @if (usuarioHallado()!.esEmpleado) { como <strong>empleado</strong> }.
+          Solo se crearán los datos de cliente — los datos personales se reutilizan.
+        </div>
+        <button mat-icon-button (click)="volverABuscar()" class="shrink-0 -mt-1 -mr-2" title="Buscar otra persona">
+          <mat-icon style="font-size:1rem">close</mat-icon>
+        </button>
+      </div>
+    }
+
+    <!-- Banner: persona nueva -->
+    @if (!isEditMode() && usuarioHallado() === null) {
+      <div class="mb-4 flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+        <mat-icon class="text-green-500 shrink-0" style="font-size:1.1rem;width:1.1rem;height:1.1rem">person_add</mat-icon>
+        Persona nueva — completa todos los datos para crear su cuenta.
+        <button mat-icon-button (click)="volverABuscar()" class="ml-auto shrink-0" title="Buscar otra persona">
+          <mat-icon style="font-size:1rem">close</mat-icon>
+        </button>
+      </div>
+    }
+
+    <mat-card class="hb-card" appearance="outlined">
+      <mat-card-content class="!p-8">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+          <!-- Datos de acceso (solo persona nueva) -->
+          @if (!isEditMode() && usuarioHallado() === null) {
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-secondary mb-2">Datos de acceso</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+              <mat-form-field>
+                <mat-label>Correo Electrónico</mat-label>
+                <input matInput type="email" formControlName="email">
+              </mat-form-field>
+              <mat-form-field>
+                <mat-label>Contraseña</mat-label>
+                <input matInput type="password" formControlName="password">
+              </mat-form-field>
+            </div>
+          }
+
+          <!-- Datos personales -->
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-secondary mb-2 mt-2">Datos personales</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+            <mat-form-field>
+              <mat-label>Nombre</mat-label>
+              <input matInput formControlName="nombre">
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Apellido</mat-label>
+              <input matInput formControlName="apellido">
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Tipo de Documento</mat-label>
+              <mat-select formControlName="tipo_documento">
+                <mat-option value="CEDULA">Cédula</mat-option>
+                <mat-option value="PASAPORTE">Pasaporte</mat-option>
+                <mat-option value="RUC">RUC</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Número de Documento</mat-label>
+              <input matInput formControlName="numero_documento">
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Teléfono</mat-label>
+              <input matInput formControlName="telefono">
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Dirección</mat-label>
+              <input matInput formControlName="direccion">
+            </mat-form-field>
+          </div>
+
+          <!-- Datos del cliente -->
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-secondary mb-2 mt-2">Datos del cliente</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+            <mat-form-field>
+              <mat-label>Nacionalidad</mat-label>
+              <input matInput formControlName="nacionalidad">
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Fecha de Nacimiento</mat-label>
+              <input matInput [matDatepicker]="pickerNacimiento" formControlName="fecha_nacimiento">
+              <mat-datepicker-toggle matIconSuffix [for]="pickerNacimiento"></mat-datepicker-toggle>
+              <mat-datepicker #pickerNacimiento></mat-datepicker>
+            </mat-form-field>
+            @if (isEditMode()) {
+              <div class="flex items-center">
+                <mat-checkbox formControlName="activo">Cliente Activo</mat-checkbox>
+              </div>
+            }
+          </div>
+
+          <mat-card-actions align="end" class="!px-0">
+            @if (!isEditMode()) {
+              <button mat-button type="button" (click)="volverABuscar()">Atrás</button>
+            } @else {
+              <a mat-button routerLink="/clientes">Cancelar</a>
+            }
+            <button mat-flat-button color="primary" type="submit" [disabled]="isSaving()">
+              @if (isSaving()) {
+                <mat-progress-spinner diameter="18" mode="indeterminate" class="inline-block mr-2"></mat-progress-spinner>
+              }
+              Guardar Cliente
+            </button>
+          </mat-card-actions>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

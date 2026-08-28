@@ -1,0 +1,112 @@
+<app-page-layout
+  title="Habitaciones"
+  subtitle="Inventario de habitaciones del hotel."
+  buttonLabel="Nueva Habitación"
+  buttonRoute="/habitaciones/nueva"
+  buttonIcon="add"
+  [noCard]="true">
+
+  @if (isLoading()) {
+    <div class="py-16 flex flex-col items-center gap-3 text-on-surface-variant">
+      <mat-progress-spinner diameter="36" mode="indeterminate"></mat-progress-spinner>
+      <span class="text-sm">Cargando habitaciones...</span>
+    </div>
+  } @else if (habitaciones().length === 0) {
+    <div class="py-12 text-center text-on-surface-variant">
+      <mat-icon style="font-size:3rem;width:3rem;height:3rem;opacity:.3">hotel</mat-icon>
+      <p class="mt-2">No se encontraron habitaciones.</p>
+    </div>
+  } @else {
+    <div class="flex flex-col gap-3">
+      @for (h of habitaciones(); track h.id_habitacion) {
+        <div class="hb-card p-4 flex items-center gap-4">
+
+          <!-- Miniatura de la galería, o el número si aún no hay fotos -->
+          @if (portada(h)) {
+            <div class="relative shrink-0">
+              <img
+                [src]="portada(h)"
+                [alt]="'Habitación ' + h.numero"
+                class="w-16 h-12 rounded-xl object-cover border border-outline-variant"
+                loading="lazy">
+              @if (totalFotos(h) > 1) {
+                <span class="absolute -bottom-1 -right-1 rounded-full bg-primary text-on-primary text-[10px] leading-none px-1.5 py-0.5 shadow-sm">
+                  {{ totalFotos(h) }}
+                </span>
+              }
+            </div>
+          } @else {
+            <div class="shrink-0 w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center font-bold text-primary text-sm select-none">
+              {{ h.numero }}
+            </div>
+          }
+
+          <!-- Info principal -->
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold text-base">
+              Habitación {{ h.numero }}
+              @if (h.tipoHabitacion?.nombre) {
+                <span class="text-on-surface-variant font-normal text-sm"> — {{ h.tipoHabitacion.nombre }}</span>
+              }
+            </p>
+            <div class="flex items-center gap-x-3 gap-y-1 flex-wrap mt-0.5">
+              @if (h.piso) {
+                <span class="text-xs text-on-surface-variant">
+                  <mat-icon style="font-size:.85rem;width:.85rem;height:.85rem;vertical-align:middle">layers</mat-icon>
+                  Piso {{ h.piso }}
+                </span>
+              }
+              @if (h.tipoHabitacion?.precio_noche) {
+                <span class="text-xs text-on-surface-variant">
+                  <mat-icon style="font-size:.85rem;width:.85rem;height:.85rem;vertical-align:middle">payments</mat-icon>
+                  ${{ h.tipoHabitacion.precio_noche }}/noche
+                </span>
+              }
+              <!-- "Sin fotos" es un estado normal, no un error: mismo tono que el
+                   resto de los datos de la fila. -->
+              <span class="text-xs text-on-surface-variant">
+                <mat-icon style="font-size:.85rem;width:.85rem;height:.85rem;vertical-align:middle">photo_library</mat-icon>
+                {{ totalFotos(h) === 0 ? 'Sin fotos' : totalFotos(h) === 1 ? '1 foto' : totalFotos(h) + ' fotos' }}
+              </span>
+              @if (h.observaciones) {
+                <span class="text-xs text-on-surface-variant italic truncate">{{ h.observaciones }}</span>
+              }
+            </div>
+          </div>
+
+          <!-- Badge estado -->
+          <div class="hidden sm:flex items-center shrink-0">
+            <span class="hb-badge {{ estadoBadge(h.estado) }}">{{ h.estado }}</span>
+          </div>
+
+          <!-- Acciones -->
+          <div class="flex items-center shrink-0 gap-1">
+            <a mat-icon-button [routerLink]="['/habitaciones/editar', h.id_habitacion]" matTooltip="Editar y gestionar fotos">
+              <mat-icon>edit</mat-icon>
+            </a>
+            <button mat-icon-button color="warn" (click)="confirmDelete(h.id_habitacion)" matTooltip="Eliminar">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Badge móvil -->
+        <div class="sm:hidden flex gap-2 px-1 -mt-2 mb-1">
+          <span class="hb-badge {{ estadoBadge(h.estado) }} text-[10px]">{{ h.estado }}</span>
+        </div>
+      }
+    </div>
+  }
+
+  <mat-paginator
+    [length]="pagination.total"
+    [pageSize]="pagination.limit"
+    [pageIndex]="pagination.pageIndex"
+    [pageSizeOptions]="pagination.pageSizeOptions"
+    (page)="onPageChange($event)"
+    showFirstLastButtons
+    class="border-t border-outline-variant mt-4">
+  </mat-paginator>
+
+</app-page-layout>

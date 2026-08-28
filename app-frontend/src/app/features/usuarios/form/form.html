@@ -1,0 +1,84 @@
+<div class="max-w-3xl mx-auto">
+  <div class="mb-6 flex items-center gap-2">
+    <a mat-icon-button routerLink="/usuarios">
+      <mat-icon>arrow_back</mat-icon>
+    </a>
+    <h2 class="font-display text-3xl font-bold text-primary">{{ isEditMode() ? 'Editar Cuenta' : 'Nueva Cuenta' }}</h2>
+  </div>
+
+  <mat-card class="hb-card" appearance="outlined">
+    <mat-card-content class="!p-8">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-secondary mb-2">Datos personales</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+          <mat-form-field>
+            <mat-label>Nombre</mat-label>
+            <input matInput formControlName="nombre">
+            @if (form.get('nombre')?.touched && form.get('nombre')?.invalid) {
+              <mat-error>Nombre requerido.</mat-error>
+            }
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Apellido</mat-label>
+            <input matInput formControlName="apellido">
+            @if (form.get('apellido')?.touched && form.get('apellido')?.invalid) {
+              <mat-error>Apellido requerido.</mat-error>
+            }
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Tipo de Documento</mat-label>
+            <mat-select formControlName="tipo_documento">
+              <mat-option value="CEDULA">Cédula</mat-option>
+              <mat-option value="PASAPORTE">Pasaporte</mat-option>
+              <mat-option value="RUC">RUC</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Número de Documento</mat-label>
+            <input matInput formControlName="numero_documento">
+            @if (form.get('numero_documento')?.touched && form.get('numero_documento')?.invalid) {
+              <mat-error>Documento requerido.</mat-error>
+            }
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Teléfono</mat-label>
+            <input matInput formControlName="telefono">
+          </mat-form-field>
+          <mat-form-field class="md:col-span-2">
+            <mat-label>Dirección</mat-label>
+            <input matInput formControlName="direccion">
+          </mat-form-field>
+        </div>
+
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-secondary mb-2 mt-2">Datos de acceso</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+          <mat-form-field class="md:col-span-2">
+            <mat-label>Correo Electrónico</mat-label>
+            <input matInput type="email" formControlName="email">
+            @if (form.get('email')?.touched && form.get('email')?.invalid) {
+              <mat-error>Correo válido requerido.</mat-error>
+            }
+          </mat-form-field>
+          <div class="flex items-center">
+            <mat-checkbox formControlName="activo">Cuenta Activa</mat-checkbox>
+          </div>
+          <mat-form-field class="md:col-span-2">
+            <mat-label>Contraseña {{ isEditMode() ? '(dejar en blanco para mantener actual)' : '' }}</mat-label>
+            <input matInput type="password" formControlName="password">
+            @if (form.get('password')?.touched && form.get('password')?.invalid) {
+              <mat-error>Mínimo 6 caracteres.</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <mat-card-actions align="end" class="!px-0">
+          <a mat-button routerLink="/usuarios">Cancelar</a>
+          <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || isSaving()">
+            Guardar
+          </button>
+        </mat-card-actions>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

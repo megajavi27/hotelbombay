@@ -1,0 +1,97 @@
+<app-page-layout
+  title="Usuarios"
+  subtitle="Cuentas de acceso al sistema."
+  buttonLabel="Nuevo Usuario"
+  buttonRoute="/usuarios/nuevo"
+  buttonIcon="person_add"
+  [noCard]="true">
+
+  @if (isLoading()) {
+    <div class="py-16 flex flex-col items-center gap-3 text-on-surface-variant">
+      <mat-progress-spinner diameter="36" mode="indeterminate"></mat-progress-spinner>
+      <span class="text-sm">Cargando usuarios...</span>
+    </div>
+  } @else if (usuarios().length === 0) {
+    <div class="py-12 text-center text-on-surface-variant">
+      <mat-icon style="font-size:3rem;width:3rem;height:3rem;opacity:.3">manage_accounts</mat-icon>
+      <p class="mt-2">No se encontraron usuarios.</p>
+    </div>
+  } @else {
+    <div class="flex flex-col gap-3">
+      @for (u of usuarios(); track u.id_usuario) {
+        <div class="hb-card p-4 flex items-center gap-4">
+
+          <!-- Avatar inicial -->
+          <div class="shrink-0 w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-base select-none">
+            {{ (u.nombre ?? '?')[0].toUpperCase() }}{{ (u.apellido ?? '')[0]?.toUpperCase() ?? '' }}
+          </div>
+
+          <!-- Info principal -->
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold text-base truncate">
+              {{ u.nombre }} {{ u.apellido }}
+            </p>
+            <div class="flex items-center gap-x-3 gap-y-1 flex-wrap mt-0.5">
+              @if (u.email) {
+                <span class="text-xs text-on-surface-variant truncate">
+                  <mat-icon style="font-size:.85rem;width:.85rem;height:.85rem;vertical-align:middle">mail</mat-icon>
+                  {{ u.email }}
+                </span>
+              }
+              @if (u.tipo_documento && u.numero_documento) {
+                <span class="text-xs text-on-surface-variant">
+                  <mat-icon style="font-size:.85rem;width:.85rem;height:.85rem;vertical-align:middle">badge</mat-icon>
+                  {{ u.tipo_documento }} {{ u.numero_documento }}
+                </span>
+              }
+            </div>
+          </div>
+
+          <!-- Badge tipo -->
+          <div class="hidden sm:flex items-center gap-2 shrink-0">
+            @if (u.tipo === 'empleado') {
+              <span class="hb-badge hb-badge-secondary">Empleado</span>
+            } @else if (u.tipo === 'cliente') {
+              <span class="hb-badge hb-badge-info">Cliente</span>
+            } @else {
+              <span class="hb-badge">{{ u.tipo }}</span>
+            }
+          </div>
+
+          <!-- Acciones -->
+          <div class="flex items-center shrink-0 gap-1">
+            <a mat-icon-button [routerLink]="['/usuarios/editar', u.id_usuario]" matTooltip="Editar">
+              <mat-icon>edit</mat-icon>
+            </a>
+            <button mat-icon-button color="warn" (click)="confirmDelete(u.id_usuario)" matTooltip="Eliminar">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Badge tipo móvil -->
+        <div class="sm:hidden flex gap-2 px-1 -mt-2 mb-1">
+          @if (u.tipo === 'empleado') {
+            <span class="hb-badge hb-badge-secondary text-[10px]">Empleado</span>
+          } @else if (u.tipo === 'cliente') {
+            <span class="hb-badge hb-badge-info text-[10px]">Cliente</span>
+          } @else {
+            <span class="hb-badge text-[10px]">{{ u.tipo }}</span>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <mat-paginator
+    [length]="pagination.total"
+    [pageSize]="pagination.limit"
+    [pageIndex]="pagination.pageIndex"
+    [pageSizeOptions]="pagination.pageSizeOptions"
+    (page)="onPageChange($event)"
+    showFirstLastButtons
+    class="border-t border-outline-variant mt-4">
+  </mat-paginator>
+
+</app-page-layout>

@@ -1,0 +1,213 @@
+<!-- ══ VISTA EMPLEADO ══════════════════════════════════════════════════════ -->
+@if (esEmpleado()) {
+  <app-page-layout
+    title="Recomendaciones"
+    subtitle="Lugares y actividades sugeridas a los huéspedes."
+    buttonLabel="Nueva Recomendación"
+    buttonRoute="/recomendaciones/nueva"
+    buttonIcon="add"
+    [noCard]="true">
+
+    <!-- Chips de categoría -->
+    <div class="flex flex-wrap gap-3 mb-8 animate-fade-in-up" style="animation-delay: 100ms;">
+      <button (click)="setCategoria(null)"
+              class="hb-filter"
+              [class.active]="categoriaActiva() === null">
+        Todas
+      </button>
+      @for (cat of categorias; track cat.value) {
+        <button (click)="setCategoria(cat.value)"
+                class="hb-filter"
+                [class.active]="categoriaActiva() === cat.value">
+          <mat-icon style="font-size:1.1rem;width:1.1rem;height:1.1rem">{{ cat.icon }}</mat-icon>
+          {{ cat.label }}
+        </button>
+      }
+    </div>
+
+    @if (isLoading()) {
+      <div class="py-16 flex flex-col items-center gap-3 text-on-surface-variant">
+        <mat-progress-spinner diameter="36" mode="indeterminate"></mat-progress-spinner>
+        <span class="text-sm">Cargando recomendaciones...</span>
+      </div>
+    } @else if (itemsFiltrados().length === 0) {
+      <div class="py-12 text-center text-on-surface-variant">
+        <mat-icon style="font-size:3rem;width:3rem;height:3rem;opacity:.3">smart_toy</mat-icon>
+        <p class="mt-2">
+          @if (categoriaActiva()) { No hay recomendaciones en esta categoría. }
+          @else { No hay recomendaciones registradas aún. }
+        </p>
+        @if (!categoriaActiva()) {
+          <a mat-flat-button color="primary" routerLink="/recomendaciones/nueva" class="mt-4">
+            Agregar primera recomendación
+          </a>
+        }
+      </div>
+    } @else {
+      <div class="flex flex-col gap-4">
+        @for (r of itemsFiltrados(); track r.id_recomendacion_ia; let i = $index) {
+          <div class="hb-card p-5 flex items-start gap-5 animate-fade-in-up" [style.animation-delay]="(i * 50) + 'ms'">
+            <!-- Icono categoría -->
+            <div class="shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center mt-0.5 shadow-inner">
+              <mat-icon class="text-primary scale-125">{{ catInfo(r.categoria).icon }}</mat-icon>
+            </div>
+
+            <!-- Info -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-4 flex-wrap">
+                <div class="min-w-0">
+                  <p class="font-display font-bold text-xl truncate text-on-surface">{{ r.titulo }}</p>
+                  <div class="flex items-center gap-x-4 gap-y-2 flex-wrap mt-1 font-inter">
+                    @if (r.ubicacion) {
+                      <span class="text-sm text-on-surface-variant flex items-center gap-1 bg-surface-container-low px-2 py-0.5 rounded-md">
+                        <mat-icon style="font-size:1rem;width:1rem;height:1rem;">place</mat-icon>
+                        {{ r.ubicacion }}
+                      </span>
+                    }
+                    @if (r.distancia_km) {
+                      <span class="text-sm text-on-surface-variant bg-surface-container-low px-2 py-0.5 rounded-md font-medium">{{ r.distancia_km }} km</span>
+                    }
+                    @if (r.calificacion) {
+                      <span class="text-sm text-yellow-500 font-bold bg-yellow-50 px-2 py-0.5 rounded-md border border-yellow-100 flex items-center gap-1">
+                        {{ estrellas(r.calificacion) }}
+                      </span>
+                    }
+                  </div>
+                  @if (r.descripcion) {
+                    <p class="text-sm text-on-surface-variant mt-3 line-clamp-2 leading-relaxed font-inter">{{ r.descripcion }}</p>
+                  }
+                </div>
+
+                <!-- Badges -->
+                <div class="flex flex-col items-end gap-2 shrink-0">
+                  <span class="{{ catInfo(r.categoria).badge }} shadow-sm">{{ catInfo(r.categoria).label }}</span>
+                  @if (!r.activo) {
+                    <span class="hb-badge hb-badge-error shadow-sm">Inactivo</span>
+                  }
+                </div>
+              </div>
+
+              <div class="mt-4 pt-4 border-t border-outline-variant/30 flex items-center justify-between gap-2 flex-wrap">
+                <span class="text-xs font-mono text-outline font-medium tracking-wider">#{{ r.id_recomendacion_ia }}</span>
+                <div class="flex items-center gap-2">
+                  <a mat-icon-button class="bg-primary/5 hover:bg-primary/15 transition-colors" [routerLink]="['/recomendaciones/editar', r.id_recomendacion_ia]" matTooltip="Editar">
+                    <mat-icon class="text-primary">edit</mat-icon>
+                  </a>
+                  <button mat-icon-button class="bg-error/5 hover:bg-error/15 transition-colors" color="warn" (click)="confirmDelete(r.id_recomendacion_ia)" matTooltip="Eliminar">
+                    <mat-icon class="text-error">delete</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <mat-paginator
+        [length]="pagination.total"
+        [pageSize]="pagination.limit"
+        [pageIndex]="pagination.pageIndex"
+        [pageSizeOptions]="pagination.pageSizeOptions"
+        (page)="onPageChange($event)"
+        showFirstLastButtons
+        class="border-t border-outline-variant mt-4">
+      </mat-paginator>
+    }
+
+  </app-page-layout>
+}
+
+<!-- ══ VISTA CLIENTE: CHATBOT ═══════════════════════════════════════════════ -->
+@else {
+  <div class="flex flex-col h-[calc(100vh-8rem)] max-w-2xl mx-auto">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4 shrink-0">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+          <mat-icon class="text-primary">smart_toy</mat-icon>
+        </div>
+        <div>
+          <p class="font-semibold text-on-surface">Asistente Hotel Bombay</p>
+          <p class="text-xs text-on-surface-variant">Recomendaciones personalizadas con IA</p>
+        </div>
+      </div>
+      <button mat-icon-button matTooltip="Reiniciar chat" (click)="clearChat()">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+
+    <!-- Burbujas de mensajes -->
+    <div #messagesContainer
+         class="flex-1 overflow-y-auto flex flex-col gap-3 pr-1 pb-2"
+         style="scroll-behavior: smooth;">
+
+      @for (msg of messages(); track $index) {
+
+        <!-- Mensaje del asistente -->
+        @if (msg.role === 'assistant') {
+          <div class="flex items-end gap-2 max-w-[85%]">
+            <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mb-0.5">
+              <mat-icon class="text-primary" style="font-size:1rem;width:1rem;height:1rem">smart_toy</mat-icon>
+            </div>
+            <div class="hb-card px-4 py-3 rounded-2xl rounded-bl-sm text-sm text-on-surface leading-relaxed whitespace-pre-wrap">
+              {{ msg.content }}
+            </div>
+          </div>
+        }
+
+        <!-- Mensaje del usuario -->
+        @if (msg.role === 'user') {
+          <div class="flex items-end gap-2 max-w-[85%] self-end flex-row-reverse">
+            <div class="w-7 h-7 rounded-full bg-secondary/20 flex items-center justify-center shrink-0 mb-0.5">
+              <mat-icon style="font-size:1rem;width:1rem;height:1rem;color:var(--mat-secondary)">person</mat-icon>
+            </div>
+            <div class="px-4 py-3 rounded-2xl rounded-br-sm text-sm leading-relaxed whitespace-pre-wrap"
+                 style="background:var(--mat-primary-container,#fdd7a7);color:var(--mat-on-primary-container,#1a1a1a)">
+              {{ msg.content }}
+            </div>
+          </div>
+        }
+      }
+
+      <!-- Indicador "escribiendo..." -->
+      @if (isSending()) {
+        <div class="flex items-end gap-2 max-w-[85%]">
+          <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+            <mat-icon class="text-primary" style="font-size:1rem;width:1rem;height:1rem">smart_toy</mat-icon>
+          </div>
+          <div class="hb-card px-4 py-3 rounded-2xl rounded-bl-sm flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-on-surface-variant opacity-60 animate-bounce" style="animation-delay:0ms"></span>
+            <span class="w-2 h-2 rounded-full bg-on-surface-variant opacity-60 animate-bounce" style="animation-delay:150ms"></span>
+            <span class="w-2 h-2 rounded-full bg-on-surface-variant opacity-60 animate-bounce" style="animation-delay:300ms"></span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Input -->
+    <div class="shrink-0 mt-4 animate-fade-in-up" style="animation-delay: 200ms;">
+      <div class="hb-card flex items-end gap-3 p-3 shadow-premium bg-white/95 backdrop-blur-xl border border-white">
+        <textarea
+          [(ngModel)]="inputText"
+          (keydown)="onKeydown($event)"
+          [disabled]="isSending()"
+          placeholder="Escribe tu pregunta... (Enter para enviar)"
+          rows="1"
+          class="flex-1 resize-none bg-transparent text-base text-on-surface placeholder:text-outline font-inter outline-none py-2 px-3 max-h-32"
+          style="field-sizing: content;">
+        </textarea>
+        <button mat-icon-button class="hb-btn-gradient !rounded-full !w-12 !h-12 flex items-center justify-center shadow-md mb-1"
+                (click)="sendMessage()"
+                [disabled]="!inputText.trim() || isSending()"
+                matTooltip="Enviar">
+          <mat-icon class="text-white ml-1">send</mat-icon>
+        </button>
+      </div>
+      <p class="text-[10px] text-on-surface-variant text-center mt-1.5">
+        Las recomendaciones son lugares seleccionados por el equipo del hotel.
+      </p>
+    </div>
+
+  </div>
+}

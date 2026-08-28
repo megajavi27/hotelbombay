@@ -1,0 +1,121 @@
+<div class="max-w-2xl mx-auto">
+  <div class="mb-6 flex items-center gap-2">
+    <a mat-icon-button routerLink="/mis-reservas">
+      <mat-icon>arrow_back</mat-icon>
+    </a>
+    <div>
+      <h2 class="font-display text-3xl font-bold text-primary">Nueva Reserva</h2>
+      <p class="text-sm text-on-surface-variant">Selecciona habitación y fechas para tu estadía.</p>
+    </div>
+  </div>
+
+  <mat-card class="hb-card" appearance="outlined">
+    <mat-card-content class="!p-8">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-2">
+
+        @if (filtradoPorTipo()) {
+          <div class="rounded-lg border border-secondary/30 bg-secondary-container/30 px-4 py-2.5 text-sm flex items-center justify-between gap-3 mb-2">
+            <span>Mostrando solo habitaciones del tipo que elegiste.</span>
+            <button type="button" mat-button color="primary" (click)="quitarFiltroTipo()">Ver todas</button>
+          </div>
+        }
+
+        <!-- Habitación -->
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-secondary mb-1">Habitación</h3>
+        <mat-form-field class="w-full">
+          <mat-label>Habitación disponible</mat-label>
+          <mat-select formControlName="id_habitacion">
+            @if (habitaciones().length === 0) {
+              <mat-option [value]="null" disabled>No hay habitaciones disponibles</mat-option>
+            }
+            @for (h of habitaciones(); track h.id_habitacion) {
+              <mat-option [value]="h.id_habitacion">
+                {{ h.numero }} — {{ h.tipoHabitacion?.nombre ?? 'Sin tipo' }}
+                @if (h.tipoHabitacion?.precio_noche) {
+                  (${{ h.tipoHabitacion.precio_noche | number:'1.2-2' }}/noche)
+                }
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Habitación seleccionada detalle -->
+        @if (habitacionSel()) {
+          <div class="rounded-lg border border-outline-variant bg-surface-variant/30 overflow-hidden text-sm mb-2">
+            <app-galeria-visor
+              [imagenes]="habitacionSel().imagenes"
+              [alt]="'Habitación ' + habitacionSel().numero"
+              altura="h-56"></app-galeria-visor>
+            <div class="px-4 py-3">
+            <p class="font-semibold">{{ habitacionSel().tipoHabitacion?.nombre }} · Hab. {{ habitacionSel().numero }}</p>
+            @if (habitacionSel().tipoHabitacion?.descripcion) {
+              <p class="text-on-surface-variant text-xs mt-0.5">{{ habitacionSel().tipoHabitacion.descripcion }}</p>
+            }
+            <p class="text-primary font-bold mt-1">${{ habitacionSel().tipoHabitacion?.precio_noche | number:'1.2-2' }} / noche</p>
+            </div>
+          </div>
+        }
+
+        <!-- Fechas -->
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-secondary mb-1 mt-2">Fechas</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+          <mat-form-field>
+            <mat-label>Check-in</mat-label>
+            <input matInput [matDatepicker]="pickerInicio" [min]="minDate" formControlName="fecha_inicio">
+            <mat-datepicker-toggle matIconSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+            <mat-datepicker #pickerInicio></mat-datepicker>
+            @if (form.get('fecha_inicio')?.touched && form.get('fecha_inicio')?.hasError('required')) {
+              <mat-error>La fecha de check-in es obligatoria.</mat-error>
+            }
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Check-out</mat-label>
+            <input matInput [matDatepicker]="pickerFin" [min]="minDateFin" formControlName="fecha_fin">
+            <mat-datepicker-toggle matIconSuffix [for]="pickerFin"></mat-datepicker-toggle>
+            <mat-datepicker #pickerFin></mat-datepicker>
+            @if (form.get('fecha_fin')?.touched && form.get('fecha_fin')?.hasError('required')) {
+              <mat-error>La fecha de check-out es obligatoria.</mat-error>
+            }
+          </mat-form-field>
+        </div>
+        @if (form.hasError('fechaFinInvalida') && form.get('fecha_fin')?.touched) {
+          <p class="text-error text-xs -mt-1 mb-2">El check-out debe ser posterior al check-in.</p>
+        }
+
+        <!-- Huéspedes -->
+        <mat-form-field class="w-full">
+          <mat-label>Número de huéspedes</mat-label>
+          <input matInput type="number" min="1" formControlName="numero_huespedes">
+          <mat-icon matSuffix>people</mat-icon>
+        </mat-form-field>
+
+        <!-- Observaciones -->
+        <mat-form-field class="w-full">
+          <mat-label>Observaciones (opcional)</mat-label>
+          <textarea matInput rows="3" formControlName="observaciones"
+            placeholder="Ej: llegada tardía, cama adicional..."></textarea>
+        </mat-form-field>
+
+        <!-- Total estimado -->
+        @if (calcularTotal() > 0) {
+          <div class="rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 flex items-center justify-between">
+            <span class="text-sm font-semibold">Total estimado</span>
+            <span class="text-xl font-bold text-primary">${{ calcularTotal() | number:'1.2-2' }}</span>
+          </div>
+        }
+
+        <mat-card-actions align="end" class="!px-0 !mt-2">
+          <a mat-button routerLink="/mis-reservas">Cancelar</a>
+          <button mat-flat-button color="primary" type="submit" [disabled]="isSaving()">
+            @if (isSaving()) {
+              <mat-progress-spinner diameter="18" mode="indeterminate" class="inline-block mr-2"></mat-progress-spinner>
+            } @else {
+              <mat-icon>check</mat-icon>
+            }
+            Confirmar Reserva
+          </button>
+        </mat-card-actions>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

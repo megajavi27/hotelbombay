@@ -1,0 +1,110 @@
+<div class="flex h-screen overflow-hidden bg-surface">
+
+  <!-- Imagen decorativa -->
+  <div class="hidden lg:block lg:w-1/2 relative bg-primary-container shrink-0">
+    <img
+      src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+      alt="Luxury Hotel" class="absolute inset-0 w-full h-full object-cover opacity-80 mix-blend-overlay">
+    <div class="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent"></div>
+    <div class="absolute bottom-16 left-16 text-on-primary">
+      <h1 class="font-display text-5xl font-bold mb-4 text-secondary-container">Hotel Bombay</h1>
+      <p class="font-body text-xl tracking-wide">Donde el lujo se encuentra con la tranquilidad</p>
+    </div>
+  </div>
+
+  <!-- Formulario -->
+  <div class="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-10 lg:p-16 bg-surface overflow-y-auto">
+    <div class="w-full max-w-md">
+
+      <div class="text-center mb-8 lg:text-left">
+        <h1 class="font-display text-4xl font-bold text-primary">Hotel Bombay</h1>
+        <p class="text-on-surface-variant text-sm mt-2 font-body tracking-widest uppercase">Sistema de Gestión</p>
+      </div>
+
+      <!-- Selector tipo login -->
+      <div class="flex gap-3 mb-8">
+        <button type="button" matRipple
+          class="flex-1 flex flex-col items-center gap-2 py-4 px-3 rounded-2xl border-2 transition-all duration-200 cursor-pointer"
+          [class.border-primary]="tipoLogin() === 'empleado'" [class.bg-primary]="tipoLogin() === 'empleado'"
+          [class.text-on-primary]="tipoLogin() === 'empleado'"
+          [class.border-outline-variant]="tipoLogin() !== 'empleado'"
+          [class.text-on-surface-variant]="tipoLogin() !== 'empleado'" (click)="seleccionarTipo('empleado')">
+          <mat-icon>badge</mat-icon>
+          <span class="text-sm font-semibold">Empleado</span>
+        </button>
+        <button type="button" matRipple
+          class="flex-1 flex flex-col items-center gap-2 py-4 px-3 rounded-2xl border-2 transition-all duration-200 cursor-pointer"
+          [class.border-primary]="tipoLogin() === 'cliente'" [class.bg-primary]="tipoLogin() === 'cliente'"
+          [class.text-on-primary]="tipoLogin() === 'cliente'" [class.border-outline-variant]="tipoLogin() !== 'cliente'"
+          [class.text-on-surface-variant]="tipoLogin() !== 'cliente'" (click)="seleccionarTipo('cliente')">
+          <mat-icon>person</mat-icon>
+          <span class="text-sm font-semibold">Cliente</span>
+        </button>
+      </div>
+
+      <!-- Formulario credenciales -->
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-2">
+
+        <mat-form-field class="w-full">
+          <mat-label>Correo Electrónico</mat-label>
+          <input matInput type="email" formControlName="email" autocomplete="email">
+          <mat-icon matPrefix class="mr-2 opacity-60">mail</mat-icon>
+          @if (form.get('email')?.touched && form.get('email')?.errors?.['required']) {
+          <mat-error>El correo es requerido.</mat-error>
+          }
+          @if (form.get('email')?.touched && form.get('email')?.errors?.['email']) {
+          <mat-error>Formato de correo inválido.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field class="w-full">
+          <mat-label>Contraseña</mat-label>
+          <input matInput [type]="hidePassword() ? 'password' : 'text'" formControlName="password"
+            autocomplete="current-password">
+          <mat-icon matPrefix class="mr-2 opacity-60">lock</mat-icon>
+          <button mat-icon-button matSuffix type="button" (click)="hidePassword.set(!hidePassword())">
+            <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (form.get('password')?.touched && form.get('password')?.errors?.['required']) {
+          <mat-error>La contraseña es requerida.</mat-error>
+          }
+          @if (form.get('password')?.touched && form.get('password')?.errors?.['minlength']) {
+          <mat-error>Mínimo 6 caracteres.</mat-error>
+          }
+        </mat-form-field>
+
+        <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || isLoading()"
+          class="!h-12 !rounded-xl !mt-4 !text-base">
+          @if (isLoading()) {
+          <mat-progress-spinner diameter="22" mode="indeterminate"></mat-progress-spinner>
+          } @else {
+          Ingresar como {{ tipoLogin() === 'empleado' ? 'Empleado' : 'Cliente' }}
+          }
+        </button>
+
+      </form>
+
+      <!-- Recuperar contraseña -->
+      <p class="text-center text-sm text-on-surface-variant mt-4">
+        <a routerLink="/olvide-password" class="text-primary hover:underline">¿Olvidaste tu contraseña?</a>
+      </p>
+
+      <!-- Registro solo para clientes -->
+      @if (tipoLogin() === 'cliente') {
+        <p class="text-center text-sm text-on-surface-variant mt-2">
+          ¿No tienes cuenta?
+          <a routerLink="/registro" class="text-primary font-semibold hover:underline">Regístrate aquí</a>
+        </p>
+      }
+
+      <!-- Volver a la página pública -->
+      <div class="mt-8 pt-5 border-t border-outline-variant/60 flex justify-center">
+        <a mat-stroked-button routerLink="/" class="!rounded-xl !h-11 !px-6">
+          <mat-icon>home</mat-icon>
+          Ir a Home
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>

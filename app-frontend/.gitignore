@@ -1,0 +1,56 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Hotel Bombay — Frontend (Angular)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Dependencias y compilado
+/node_modules
+/dist
+/tmp
+/out-tsc
+/bazel-out
+
+# Caché del compilador de Angular
+/.angular/cache
+.sass-cache/
+
+# ── Credenciales ────────────────────────────────────────────────────────────
+# Por ahora el frontend no usa .env, pero si en algún momento se agrega una
+# clave (por ejemplo la de un mapa), esta regla evita que se suba.
+.env
+.env.*
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-error.log
+testem.log
+/libpeerconnection.log
+
+# Pruebas y cobertura
+/coverage
+__screenshots__/
+
+# Temporales
+/connect.lock
+/typings
+
+# Editores e IDEs
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/mcp.json
+.history/*
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini

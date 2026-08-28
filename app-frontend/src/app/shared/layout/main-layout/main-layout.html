@@ -1,0 +1,23 @@
+<mat-sidenav-container class="h-screen">
+  <mat-sidenav #sidenav
+    [mode]="isMobile() ? 'over' : 'side'"
+    [opened]="!isMobile()"
+    class="hb-sidenav"
+    [fixedInViewport]="true">
+    <app-sidebar></app-sidebar>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="hb-sidenav-content">
+    @if (isMobile()) {
+      <header class="hb-mobile-header">
+        <button mat-icon-button class="hb-menu-btn" (click)="sidenav.toggle()">
+          <mat-icon>menu</mat-icon>
+        </button>
+        <span class="font-display font-bold text-base text-primary">Hotel Bombay</span>
+      </header>
+    }
+    <div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

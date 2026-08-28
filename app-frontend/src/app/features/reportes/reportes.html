@@ -1,0 +1,201 @@
+<app-page-layout
+  title="Reportes"
+  subtitle="Genera y descarga reportes en formato PDF."
+  [noCard]="true">
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+    <!-- ── 1. REPORTE DE INGRESOS ────────────────────────────────────── -->
+    <div class="hb-card p-5 flex flex-col gap-4">
+      <div class="flex items-start gap-3">
+        <div class="shrink-0 w-11 h-11 rounded-xl bg-green-100 flex items-center justify-center">
+          <mat-icon class="text-green-700">trending_up</mat-icon>
+        </div>
+        <div class="flex-1">
+          <p class="font-semibold text-base">Reporte de Ingresos</p>
+          <p class="text-xs text-on-surface-variant mt-0.5">Todos los pagos completados en el período, agrupados por método de pago.</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Desde</mat-label>
+          <input matInput [matDatepicker]="pvDesde" [formControl]="ventasDesde">
+          <mat-datepicker-toggle matIconSuffix [for]="pvDesde"></mat-datepicker-toggle>
+          <mat-datepicker #pvDesde></mat-datepicker>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Hasta</mat-label>
+          <input matInput [matDatepicker]="pvHasta" [formControl]="ventasHasta">
+          <mat-datepicker-toggle matIconSuffix [for]="pvHasta"></mat-datepicker-toggle>
+          <mat-datepicker #pvHasta></mat-datepicker>
+        </mat-form-field>
+      </div>
+
+      <button mat-flat-button color="primary" (click)="descargarVentas()" [disabled]="loadingVentas()" class="w-full">
+        @if (loadingVentas()) {
+          <mat-progress-spinner diameter="16" mode="indeterminate" class="inline-block"></mat-progress-spinner>
+          Generando PDF…
+        } @else {
+          <ng-container>
+            <mat-icon>picture_as_pdf</mat-icon>
+            Descargar PDF
+          </ng-container>
+        }
+      </button>
+    </div>
+
+    <!-- ── 2. COBROS EN EFECTIVO ─────────────────────────────────────── -->
+    <div class="hb-card p-5 flex flex-col gap-4">
+      <div class="flex items-start gap-3">
+        <div class="shrink-0 w-11 h-11 rounded-xl bg-emerald-100 flex items-center justify-center">
+          <mat-icon class="text-emerald-700">payments</mat-icon>
+        </div>
+        <div class="flex-1">
+          <p class="font-semibold text-base">Cobros en Efectivo</p>
+          <p class="text-xs text-on-surface-variant mt-0.5">Solo los pagos realizados en efectivo. Útil para cuadre de caja diario.</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Desde</mat-label>
+          <input matInput [matDatepicker]="peDesde" [formControl]="efectivoDesde">
+          <mat-datepicker-toggle matIconSuffix [for]="peDesde"></mat-datepicker-toggle>
+          <mat-datepicker #peDesde></mat-datepicker>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Hasta</mat-label>
+          <input matInput [matDatepicker]="peHasta" [formControl]="efectivoHasta">
+          <mat-datepicker-toggle matIconSuffix [for]="peHasta"></mat-datepicker-toggle>
+          <mat-datepicker #peHasta></mat-datepicker>
+        </mat-form-field>
+      </div>
+
+      <button mat-flat-button color="primary" (click)="descargarEfectivo()" [disabled]="loadingEfectivo()" class="w-full">
+        @if (loadingEfectivo()) {
+          <mat-progress-spinner diameter="16" mode="indeterminate" class="inline-block"></mat-progress-spinner>
+          Generando PDF…
+        } @else {
+          <ng-container>
+            <mat-icon>picture_as_pdf</mat-icon>
+            Descargar PDF
+          </ng-container>
+        }
+      </button>
+    </div>
+
+    <!-- ── 3. HABITACIONES OCUPADAS ──────────────────────────────────── -->
+    <div class="hb-card p-5 flex flex-col gap-4">
+      <div class="flex items-start gap-3">
+        <div class="shrink-0 w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center">
+          <mat-icon class="text-blue-700">meeting_room</mat-icon>
+        </div>
+        <div class="flex-1">
+          <p class="font-semibold text-base">Habitaciones Ocupadas</p>
+          <p class="text-xs text-on-surface-variant mt-0.5">Snapshot actual de todas las habitaciones con check-in activo y tasa de ocupación.</p>
+        </div>
+      </div>
+
+      <div class="rounded-xl bg-blue-50 border border-blue-200 px-3 py-2 text-xs text-blue-800 flex items-center gap-2">
+        <mat-icon style="font-size:1rem;width:1rem;height:1rem">info</mat-icon>
+        <span>Este reporte no requiere filtros — muestra el estado actual en tiempo real.</span>
+      </div>
+
+      <button mat-flat-button color="primary" (click)="descargarOcupacion()" [disabled]="loadingOcupacion()" class="w-full">
+        @if (loadingOcupacion()) {
+          <mat-progress-spinner diameter="16" mode="indeterminate" class="inline-block"></mat-progress-spinner>
+          Generando PDF…
+        } @else {
+          <ng-container>
+            <mat-icon>picture_as_pdf</mat-icon>
+            Descargar PDF
+          </ng-container>
+        }
+      </button>
+    </div>
+
+    <!-- ── 4. REPORTE DE RESERVAS ────────────────────────────────────── -->
+    <div class="hb-card p-5 flex flex-col gap-4">
+      <div class="flex items-start gap-3">
+        <div class="shrink-0 w-11 h-11 rounded-xl bg-violet-100 flex items-center justify-center">
+          <mat-icon class="text-violet-700">event_available</mat-icon>
+        </div>
+        <div class="flex-1">
+          <p class="font-semibold text-base">Reporte de Reservas</p>
+          <p class="text-xs text-on-surface-variant mt-0.5">Listado de reservas por período y estado. Incluye totales por categoría.</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Check-in desde</mat-label>
+          <input matInput [matDatepicker]="prDesde" [formControl]="reservasDesde">
+          <mat-datepicker-toggle matIconSuffix [for]="prDesde"></mat-datepicker-toggle>
+          <mat-datepicker #prDesde></mat-datepicker>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Check-out hasta</mat-label>
+          <input matInput [matDatepicker]="prHasta" [formControl]="reservasHasta">
+          <mat-datepicker-toggle matIconSuffix [for]="prHasta"></mat-datepicker-toggle>
+          <mat-datepicker #prHasta></mat-datepicker>
+        </mat-form-field>
+      </div>
+
+      <!-- Estado filter chips -->
+      <div class="flex flex-wrap gap-1.5">
+        @for (e of ESTADOS; track e.value) {
+          <button type="button"
+                  (click)="reservasEstado.setValue(e.value)"
+                  class="px-2.5 py-1 rounded-full text-xs font-medium border transition-colors"
+                  [class.bg-primary]="reservasEstado.value === e.value"
+                  [class.text-on-primary]="reservasEstado.value === e.value"
+                  [class.border-primary]="reservasEstado.value === e.value"
+                  [class.bg-surface]="reservasEstado.value !== e.value"
+                  [class.text-on-surface-variant]="reservasEstado.value !== e.value"
+                  [class.border-outline-variant]="reservasEstado.value !== e.value">
+            {{ e.label }}
+          </button>
+        }
+      </div>
+
+      <button mat-flat-button color="primary" (click)="descargarReservas()" [disabled]="loadingReservas()" class="w-full">
+        @if (loadingReservas()) {
+          <mat-progress-spinner diameter="16" mode="indeterminate" class="inline-block"></mat-progress-spinner>
+          Generando PDF…
+        } @else {
+          <ng-container>
+            <mat-icon>picture_as_pdf</mat-icon>
+            Descargar PDF
+          </ng-container>
+        }
+      </button>
+    </div>
+
+    <!-- ── 5. RESUMEN DE CLIENTES ────────────────────────────────────── -->
+    <div class="hb-card p-5 flex flex-col gap-4 lg:col-span-2">
+      <div class="flex items-start gap-3">
+        <div class="shrink-0 w-11 h-11 rounded-xl bg-amber-100 flex items-center justify-center">
+          <mat-icon class="text-amber-700">groups</mat-icon>
+        </div>
+        <div class="flex-1">
+          <p class="font-semibold text-base">Resumen de Clientes</p>
+          <p class="text-xs text-on-surface-variant mt-0.5">Listado completo de clientes con número de reservas, total gastado y estado. Ordenado por actividad.</p>
+        </div>
+        <button mat-flat-button color="primary" (click)="descargarClientes()" [disabled]="loadingClientes()">
+          @if (loadingClientes()) {
+            <mat-progress-spinner diameter="16" mode="indeterminate" class="inline-block"></mat-progress-spinner>
+            Generando PDF…
+          } @else {
+            <ng-container>
+              <mat-icon>picture_as_pdf</mat-icon>
+              Descargar PDF
+            </ng-container>
+          }
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+</app-page-layout>

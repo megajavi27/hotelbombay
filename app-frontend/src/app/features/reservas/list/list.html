@@ -1,0 +1,202 @@
+<app-page-layout
+  title="Reservas"
+  subtitle="Gestión de todas las reservas del hotel."
+  buttonLabel="Nueva Reserva"
+  buttonRoute="/reservas/nuevo"
+  buttonIcon="add"
+  [noCard]="true">
+
+  <!-- ── Chips de estado ────────────────────────────────────── -->
+  <div class="flex flex-wrap gap-2 mb-3">
+    @for (e of ESTADOS; track e.value) {
+      <button type="button"
+              (click)="setEstado(e.value)"
+              class="px-3 py-1.5 rounded-full text-sm font-medium border transition-colors inline-flex items-center gap-1.5"
+              [class.bg-primary]="filtroEstado() === e.value"
+              [class.text-on-primary]="filtroEstado() === e.value"
+              [class.border-primary]="filtroEstado() === e.value"
+              [class.bg-surface]="filtroEstado() !== e.value"
+              [class.text-on-surface-variant]="filtroEstado() !== e.value"
+              [class.border-outline-variant]="filtroEstado() !== e.value">
+        {{ e.label }}
+      </button>
+    }
+  </div>
+
+  <!-- ── Filtros ─────────────────────────────────────────────── -->
+  <div class="hb-card-wrapper p-4 mb-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+
+      <!-- Búsqueda por cliente -->
+      <div class="lg:col-span-2">
+        <mat-form-field class="w-full" appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Buscar cliente</mat-label>
+          <mat-icon matPrefix class="mr-1 text-on-surface-variant">search</mat-icon>
+          <input matInput [formControl]="busqueda" placeholder="Nombre, apellido o documento…">
+          @if (busqueda.value) {
+            <button matSuffix mat-icon-button (click)="busqueda.setValue('')">
+              <mat-icon>close</mat-icon>
+            </button>
+          }
+        </mat-form-field>
+      </div>
+
+      <!-- Fecha inicio -->
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Check-in desde</mat-label>
+        <input matInput [matDatepicker]="pickerFI" [formControl]="fechaInicio">
+        <mat-datepicker-toggle matIconSuffix [for]="pickerFI"></mat-datepicker-toggle>
+        <mat-datepicker #pickerFI></mat-datepicker>
+      </mat-form-field>
+
+      <!-- Fecha fin -->
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Check-out hasta</mat-label>
+        <input matInput [matDatepicker]="pickerFF" [formControl]="fechaFin">
+        <mat-datepicker-toggle matIconSuffix [for]="pickerFF"></mat-datepicker-toggle>
+        <mat-datepicker #pickerFF></mat-datepicker>
+      </mat-form-field>
+
+    </div>
+
+    <!-- Botones de acción filtros -->
+    <div class="flex items-center gap-2 mt-3 flex-wrap">
+      <button mat-flat-button color="primary" (click)="buscarFechas()" class="!text-sm">
+        <mat-icon>filter_list</mat-icon> Aplicar fechas
+      </button>
+      @if (filtrosActivos) {
+        <button mat-stroked-button (click)="limpiarFiltros()" class="!text-sm">
+          <mat-icon>clear</mat-icon> Limpiar filtros
+        </button>
+        <span class="text-xs text-on-surface-variant">
+          {{ pagination.total }} resultado{{ pagination.total !== 1 ? 's' : '' }}
+        </span>
+      }
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="py-16 flex flex-col items-center gap-3 text-on-surface-variant">
+      <mat-progress-spinner diameter="36" mode="indeterminate"></mat-progress-spinner>
+      <span class="text-sm">Cargando reservas...</span>
+    </div>
+  } @else if (reservas().length === 0) {
+    <div class="py-12 text-center text-on-surface-variant">
+      <mat-icon style="font-size:3rem;width:3rem;height:3rem;opacity:.3">event_busy</mat-icon>
+      <p class="mt-2">
+        @if (filtrosActivos) { No se encontraron reservas con esos filtros. }
+        @else { No se encontraron reservas. }
+      </p>
+      @if (filtrosActivos) {
+        <button mat-stroked-button (click)="limpiarFiltros()" class="mt-3 !text-sm">
+          Limpiar filtros
+        </button>
+      }
+    </div>
+  } @else {
+    <div class="flex flex-col gap-3">
+      @for (r of reservas(); track r.id_reserva) {
+        <div class="hb-card p-4 flex items-start gap-4">
+
+          <!-- Icono -->
+          <div class="shrink-0 w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mt-0.5">
+            <mat-icon class="text-primary">hotel</mat-icon>
+          </div>
+
+          <!-- Info principal -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-start justify-between gap-2 flex-wrap">
+              <div class="min-w-0">
+                <!-- Cliente -->
+                @if (r.cliente?.usuario) {
+                  <p class="font-semibold text-base">
+                    {{ r.cliente.usuario.nombre }} {{ r.cliente.usuario.apellido }}
+                  </p>
+                  <p class="text-xs text-on-surface-variant">
+                    {{ r.cliente.usuario.numero_documento }}
+                    @if (r.cliente.usuario.email) { · {{ r.cliente.usuario.email }} }
+                  </p>
+                } @else {
+                  <p class="font-semibold text-base text-on-surface-variant">Cliente #{{ r.id_cliente }}</p>
+                }
+
+                <!-- Habitación y fechas -->
+                <p class="text-sm text-on-surface-variant mt-1 flex items-center gap-1 flex-wrap">
+                  <mat-icon style="font-size:.9rem;width:.9rem;height:.9rem">bed</mat-icon>
+                  Hab. {{ r.habitacion?.numero ?? '#?' }}
+                  @if (r.habitacion?.tipoHabitacion?.nombre) {
+                    <span class="text-on-surface-variant/70">— {{ r.habitacion.tipoHabitacion.nombre }}</span>
+                  }
+                  <span class="mx-1 text-outline-variant">·</span>
+                  <mat-icon style="font-size:.9rem;width:.9rem;height:.9rem">calendar_today</mat-icon>
+                  {{ formatDate(r.fecha_inicio) }} → {{ formatDate(r.fecha_fin) }}
+                  @if (r.numero_huespedes) {
+                    <span class="mx-1 text-outline-variant">·</span>
+                    {{ r.numero_huespedes }} huésped{{ r.numero_huespedes > 1 ? 'es' : '' }}
+                  }
+                </p>
+              </div>
+              <span class="hb-badge {{ estadoBadge(r.estado) }} shrink-0">{{ r.estado }}</span>
+            </div>
+
+            <div class="mt-2 flex items-center justify-between gap-2 flex-wrap">
+              <span class="text-xs text-on-surface-variant">Reserva #{{ r.id_reserva }}</span>
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-bold text-primary">${{ r.total }}</span>
+
+                @if (r.estado === 'PENDIENTE') {
+                  <button mat-flat-button
+                          (click)="cobrarEfectivoReserva(r.id_reserva)"
+                          class="!text-xs !py-1 !px-3 !h-auto !bg-green-600 !text-white"
+                          matTooltip="Registrar pago en efectivo">
+                    <mat-icon style="font-size:1rem;width:1rem;height:1rem">payments</mat-icon>
+                    Pagar en efectivo
+                  </button>
+                }
+
+                @if (r.estado === 'CONFIRMADA') {
+                  <button mat-flat-button
+                          (click)="checkIn(r.id_reserva)"
+                          class="!text-xs !py-1 !px-3 !h-auto !bg-blue-600 !text-white"
+                          matTooltip="Registrar check-in">
+                    <mat-icon style="font-size:1rem;width:1rem;height:1rem">login</mat-icon>
+                    Check-in
+                  </button>
+                }
+
+                @if (r.estado === 'CHECKIN') {
+                  <button mat-flat-button
+                          (click)="checkOut(r.id_reserva)"
+                          class="!text-xs !py-1 !px-3 !h-auto !bg-slate-600 !text-white"
+                          matTooltip="Registrar check-out">
+                    <mat-icon style="font-size:1rem;width:1rem;height:1rem">logout</mat-icon>
+                    Check-out
+                  </button>
+                }
+
+                <a mat-icon-button [routerLink]="['/reservas/editar', r.id_reserva]" matTooltip="Editar">
+                  <mat-icon>edit</mat-icon>
+                </a>
+                <button mat-icon-button color="warn" (click)="confirmDelete(r.id_reserva)" matTooltip="Eliminar">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      }
+    </div>
+  }
+
+  <mat-paginator
+    [length]="pagination.total"
+    [pageSize]="pagination.limit"
+    [pageIndex]="pagination.pageIndex"
+    [pageSizeOptions]="pagination.pageSizeOptions"
+    (page)="onPageChange($event)"
+    showFirstLastButtons
+    class="border-t border-outline-variant mt-4">
+  </mat-paginator>
+
+</app-page-layout>

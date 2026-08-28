@@ -1,0 +1,128 @@
+<div class="min-h-screen bg-surface">
+
+  <!-- ── Navbar ─────────────────────────────────────────────────────────── -->
+  <header class="sticky top-0 z-20 bg-primary text-on-primary shadow-md">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <span class="font-display text-2xl font-bold tracking-wide">Hotel Bombay</span>
+      <nav class="flex items-center gap-2 sm:gap-3">
+        <a mat-button routerLink="/login" class="!text-on-primary">Iniciar sesión</a>
+        <a mat-flat-button routerLink="/registro" color="secondary">Registrarse</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ── Hero ───────────────────────────────────────────────────────────── -->
+  <section class="relative overflow-hidden bg-primary text-on-primary">
+    <img
+      src="https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=1920&q=80"
+      alt="Hotel Bombay — vista general" class="absolute inset-0 w-full h-full object-cover opacity-30">
+    <div class="absolute inset-0 bg-gradient-to-t from-primary via-primary/70 to-primary/40"></div>
+    <div class="relative max-w-6xl mx-auto px-6 py-24 sm:py-32">
+      <p class="font-body text-sm uppercase tracking-[0.3em] text-secondary-container mb-3">Bienvenido a</p>
+      <h1 class="font-display text-5xl sm:text-6xl font-bold mb-4 max-w-2xl">Hotel Bombay</h1>
+      <p class="font-body text-lg sm:text-xl max-w-xl text-on-primary/90 mb-10">
+        Donde el lujo se encuentra con la tranquilidad. Descubre nuestras habitaciones,
+        servicios y comodidades pensadas para una estadía inolvidable.
+      </p>
+      <div class="flex flex-wrap gap-3">
+        <a mat-flat-button color="secondary" class="!h-12 !px-6 !rounded-xl !text-base" href="#habitaciones">
+          <mat-icon class="mr-1">meeting_room</mat-icon>
+          Ver disponibilidad
+        </a>
+        <a mat-stroked-button routerLink="/registro" class="!h-12 !px-6 !rounded-xl !text-base !text-on-primary !border-on-primary/40">
+          Crear cuenta
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Información general ───────────────────────────────────────────── -->
+  <section class="max-w-6xl mx-auto px-6 py-16 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
+    <div>
+      <mat-icon class="!text-4xl !w-auto !h-auto text-secondary mb-2">hotel</mat-icon>
+      <h3 class="font-display text-lg font-bold text-primary mb-1">Habitaciones confortables</h3>
+      <p class="text-sm text-on-surface-variant">Espacios diseñados para el descanso, con distintos tipos según tu necesidad.</p>
+    </div>
+    <div>
+      <mat-icon class="!text-4xl !w-auto !h-auto text-secondary mb-2">room_service</mat-icon>
+      <h3 class="font-display text-lg font-bold text-primary mb-1">Atención personalizada</h3>
+      <p class="text-sm text-on-surface-variant">Nuestro equipo está disponible para que tu estadía sea perfecta de principio a fin.</p>
+    </div>
+    <div>
+      <mat-icon class="!text-4xl !w-auto !h-auto text-secondary mb-2">smart_toy</mat-icon>
+      <h3 class="font-display text-lg font-bold text-primary mb-1">Recomendaciones locales</h3>
+      <p class="text-sm text-on-surface-variant">Una vez hospedado, nuestro asistente te sugiere los mejores lugares cerca del hotel.</p>
+    </div>
+  </section>
+
+  <!-- ── Tipos de habitación ────────────────────────────────────────────── -->
+  <section id="habitaciones" class="bg-surface-container/40 py-16">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center mb-10">
+        <h2 class="font-display text-3xl font-bold text-primary mb-2">Nuestras Habitaciones</h2>
+        <p class="text-on-surface-variant">Elige el tipo de habitación que mejor se adapte a tu estadía.</p>
+      </div>
+
+      @if (isLoading()) {
+        <div class="flex justify-center py-16">
+          <mat-progress-spinner diameter="40" mode="indeterminate"></mat-progress-spinner>
+        </div>
+      } @else if (tipos().length === 0) {
+        <p class="text-center text-on-surface-variant py-16">
+          No hay tipos de habitación disponibles por el momento. Vuelve a intentarlo más tarde.
+        </p>
+      } @else {
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          @for (tipo of tipos(); track tipo.id_tipos_habitacion) {
+            <div class="bg-surface rounded-2xl overflow-hidden shadow-sm border border-outline-variant/50 flex flex-col">
+              <app-galeria-visor
+                [imagenes]="imagenesDe(tipo)"
+                [alt]="'Habitación ' + tipo.nombre"
+                altura="h-48"
+                [fallback]="imagenDefault"></app-galeria-visor>
+              <div class="p-5 flex flex-col flex-1">
+                <h3 class="font-display text-xl font-bold text-primary mb-1">{{ tipo.nombre }}</h3>
+                @if (tipo.descripcion) {
+                  <p class="text-sm text-on-surface-variant mb-3 line-clamp-3">{{ tipo.descripcion }}</p>
+                }
+
+                <div class="flex items-center gap-4 text-xs text-on-surface-variant mb-4">
+                  <span class="flex items-center gap-1">
+                    <mat-icon class="!text-base !w-4 !h-4">group</mat-icon>
+                    Hasta {{ tipo.capacidad_maxima }} huéspedes
+                  </span>
+                </div>
+
+                @if (tipo.servicios) {
+                  <p class="text-xs text-on-surface-variant mb-4">
+                    <mat-icon class="!text-base !w-4 !h-4 align-middle mr-1">check_circle</mat-icon>
+                    {{ tipo.servicios }}
+                  </p>
+                }
+
+                <div class="mt-auto flex items-center justify-between pt-3 border-t border-outline-variant/50">
+                  <span class="font-display text-lg font-bold text-primary">
+                    ${{ tipo.precio_noche | number:'1.2-2' }}
+                    <span class="text-xs font-normal text-on-surface-variant">/ noche</span>
+                  </span>
+                  <button mat-flat-button color="primary" class="!rounded-xl" (click)="reservar(tipo)">
+                    Reservar
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- ── Footer ─────────────────────────────────────────────────────────── -->
+  <footer class="bg-primary text-on-primary/80 py-8">
+    <div class="max-w-6xl mx-auto px-6 text-center text-sm">
+      <p class="font-display text-lg font-bold text-on-primary mb-1">Hotel Bombay</p>
+      <p>Sistema de Gestión Hotelera</p>
+    </div>
+  </footer>
+
+</div>

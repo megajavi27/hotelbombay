@@ -1,0 +1,42 @@
+<div class="hb-sidenav-inner flex flex-col h-full text-white overflow-x-hidden">
+
+  <div class="flex items-center gap-3 px-6 py-5 shrink-0">
+    <mat-icon class="!text-3xl !w-9 !h-9 text-secondary-container shrink-0">hotel</mat-icon>
+    <span class="font-display text-xl font-bold tracking-wide truncate">Hotel Bombay</span>
+  </div>
+  <mat-divider class="hb-divider shrink-0"></mat-divider>
+
+  <mat-nav-list class="flex-1 py-2 overflow-x-hidden min-w-0">
+    @for (grupo of grupos(); track grupo) {
+      @if (grupo !== 'Principal') {
+        <h3 matSubheader class="hb-subheader">{{ grupo }}</h3>
+      }
+      @for (item of itemsPorGrupo(grupo); track item.route) {
+        <a mat-list-item
+           [routerLink]="item.route"
+           routerLinkActive="hb-nav-active"
+           class="hb-nav-item">
+          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+          <span matListItemTitle>{{ item.label }}</span>
+        </a>
+      }
+    }
+  </mat-nav-list>
+
+  <mat-divider class="hb-divider shrink-0"></mat-divider>
+  <div class="p-4 shrink-0">
+    @if (authService.usuario(); as u) {
+      <div class="px-2 py-2 mb-1 min-w-0">
+        <p class="text-sm font-medium truncate">{{ u.nombreCompleto }}</p>
+        <p class="text-xs opacity-70 truncate">
+          {{ u.perfil ?? 'Cliente' }}
+        </p>
+      </div>
+    }
+    <button mat-stroked-button class="hb-logout-btn w-full" (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      Cerrar Sesión
+    </button>
+  </div>
+
+</div>

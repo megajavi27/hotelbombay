@@ -1,0 +1,65 @@
+<div class="relative">
+
+  <!-- Foto grande: al pulsarla se abre a pantalla completa con zoom -->
+  <button
+    type="button"
+    class="block w-full relative group"
+    [class.cursor-zoom-in]="sePuedeAmpliar()"
+    [class.cursor-default]="!sePuedeAmpliar()"
+    [attr.aria-label]="sePuedeAmpliar() ? 'Ampliar foto' : null"
+    [disabled]="!sePuedeAmpliar()"
+    (click)="abrirLightbox()">
+
+    <img
+      [src]="actual()"
+      [alt]="alt"
+      class="w-full object-cover bg-surface-variant/40 {{ altura }}"
+      loading="lazy"
+      (error)="onError(actual())">
+
+    @if (sePuedeAmpliar()) {
+      <!-- Pista de que se puede ampliar -->
+      <span
+        class="absolute bottom-2 right-2 rounded-full bg-black/55 text-white p-1.5 flex items-center
+               opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity
+               max-sm:opacity-100">
+        <mat-icon class="!text-base !w-4 !h-4">zoom_in</mat-icon>
+      </span>
+    }
+
+    <!-- Contador, solo cuando hay más de una -->
+    @if (urls().length > 1) {
+      <span class="absolute top-2 right-2 rounded-full bg-black/55 text-white text-[11px] px-2 py-0.5 flex items-center gap-1">
+        <mat-icon class="!text-xs !w-3 !h-3">photo_library</mat-icon>
+        {{ indice() + 1 }} / {{ urls().length }}
+      </span>
+    }
+  </button>
+
+  <!-- Miniaturas -->
+  @if (urls().length > 1) {
+    <div class="flex gap-1.5 overflow-x-auto p-2 bg-surface">
+      @for (url of urls(); track url; let i = $index) {
+        <button
+          type="button"
+          class="shrink-0 w-14 h-11 rounded-md overflow-hidden border-2 transition-colors"
+          [class.border-primary]="i === indice()"
+          [class.border-transparent]="i !== indice()"
+          [attr.aria-label]="'Ver foto ' + (i + 1) + ' de ' + urls().length"
+          [attr.aria-current]="i === indice() ? 'true' : null"
+          (click)="seleccionar(i)">
+          <img [src]="url" [alt]="alt + ' — miniatura ' + (i + 1)" class="w-full h-full object-cover" loading="lazy">
+        </button>
+      }
+    </div>
+  }
+
+</div>
+
+@if (lightboxAbierto()) {
+  <app-lightbox
+    [imagenes]="urls()"
+    [indiceInicial]="indice()"
+    [alt]="alt"
+    (cerrado)="lightboxAbierto.set(false)"></app-lightbox>
+}
