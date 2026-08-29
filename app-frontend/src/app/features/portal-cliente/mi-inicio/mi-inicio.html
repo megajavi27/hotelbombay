@@ -1,12 +1,38 @@
 <div class="max-w-5xl mx-auto">
 
-  <!-- Bienvenida -->
-  <div class="mb-8">
-    <h1 class="font-display text-4xl font-bold text-primary">
-      Bienvenido, {{ usuario()?.nombreCompleto ?? 'Huésped' }}
-    </h1>
-    <p class="text-on-surface-variant mt-1">Gestiona tus reservas y actualiza tu información desde aquí.</p>
-  </div>
+  <!-- ── Banner de bienvenida ────────────────────────────────────────────────
+       Reemplaza al antiguo título suelto: el saludo vive dentro del banner, así
+       el nombre no aparece dos veces en la misma pantalla. -->
+  <section class="relative overflow-hidden rounded-2xl bg-gradient-primary shadow-premium mb-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center p-6 sm:p-8 lg:p-10">
+
+      <!-- Texto y acción -->
+      <div class="text-on-primary">
+        <h1 class="font-display text-3xl sm:text-4xl font-bold text-secondary-container leading-tight">
+          Bienvenido, {{ primerNombre() }}
+        </h1>
+        <p class="font-body mt-3 text-on-primary/80 max-w-md">
+          Gestiona tus reservas y actualiza tu información desde aquí. Descubre
+          nuestras habitaciones y reserva tu próxima estadía en Hotel Bombay.
+        </p>
+        <a
+          mat-flat-button
+          routerLink="/mis-reservas/nueva"
+          class="!bg-secondary-container !text-primary !rounded-full !h-12 !px-7 !mt-6 !font-semibold">
+          <mat-icon>add_circle</mat-icon>
+          Reservar ahora
+        </a>
+      </div>
+
+      <!-- Carrusel de fotos del hotel -->
+      <div class="h-56 sm:h-64 lg:h-72">
+        <app-carrusel-fotos
+          [fotos]="fotos()"
+          descripcion="Habitación del Hotel Bombay"></app-carrusel-fotos>
+      </div>
+
+    </div>
+  </section>
 
   <!-- Acciones rápidas -->
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">

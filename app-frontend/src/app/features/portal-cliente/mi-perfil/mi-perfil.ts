@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -12,6 +12,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { ClienteService } from '@services/cliente.service';
 import { NotificationService } from '@services/notification.service';
 import { toIsoDate } from '@utils/date.util';
+import { SelectPaisComponent } from '@shared/components/select-pais/select-pais';
 import moment from 'moment';
 
 @Component({
@@ -28,6 +29,7 @@ import moment from 'moment';
     MatIconModule,
     MatProgressSpinnerModule,
     MatDividerModule,
+    SelectPaisComponent,
   ],
   templateUrl: './mi-perfil.html',
 })
@@ -51,7 +53,9 @@ export class MiPerfilComponent {
       numero_documento: [{ value: '', disabled: true }],
       telefono:         [''],
       direccion:        [''],
-      nacionalidad:     [''],
+      // Obligatoria también aquí: el cliente no debería poder dejar en blanco
+      // un dato que sí se le exigió al registrarse.
+      nacionalidad:     ['', Validators.required],
       fecha_nacimiento: [''],
     });
 

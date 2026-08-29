@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -9,6 +9,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { AuthService } from '@services/auth.service';
 import { NotificationService } from '@services/notification.service';
+import { DocumentoDirective } from '@shared/directives/documento.directive';
+import { mensajeErrorDocumento } from '@utils/documento.util';
+import { SelectPaisComponent } from '@shared/components/select-pais/select-pais';
 
 @Component({
   selector: 'app-registro',
@@ -22,6 +25,8 @@ import { NotificationService } from '@services/notification.service';
     MatIconModule,
     MatProgressSpinnerModule,
     MatSelectModule,
+    SelectPaisComponent,
+    DocumentoDirective,
   ],
   templateUrl: './registro.html',
 })
@@ -56,6 +61,10 @@ export class RegistroComponent {
     tipo_documento:   ['CEDULA'],
     numero_documento: ['', [Validators.required]],
     telefono:         [''],
+    // Obligatoria y sin valor por defecto: si se precargara "Ecuador" todo el
+    // mundo quedaría registrado como ecuatoriano sin haberlo elegido, y el
+    // gráfico de nacionalidades del dashboard no diría nada.
+    nacionalidad:     ['', [Validators.required]],
   });
 
   onSubmit() {
@@ -77,4 +86,13 @@ export class RegistroComponent {
       },
     });
   }
+
+  /**
+   * Mensaje de error del número de documento. La regla depende del tipo elegido
+   * (10 dígitos la cédula, 13 el RUC), así que se resuelve en un solo sitio.
+   */
+  errorDocumento(control: AbstractControl | null): string | null {
+    return control?.touched ? mensajeErrorDocumento(control.errors) : null;
+  }
+
 }

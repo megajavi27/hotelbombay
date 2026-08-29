@@ -1,0 +1,35 @@
+<mat-form-field class="w-full">
+  <mat-label>{{ etiqueta() }}</mat-label>
+
+  <mat-select
+    [formControl]="control"
+    panelClass="hb-panel-pais"
+    (openedChange)="alAbrirCerrar($event)">
+
+    <!-- Buscador fijo en la parte superior del panel. El clic se detiene aquí
+         para que escribir dentro de la caja no cierre el desplegable. -->
+    <div class="hb-buscador-pais" (click)="$event.stopPropagation()">
+      <mat-icon>search</mat-icon>
+      <input
+        #cajaBusqueda
+        type="text"
+        autocomplete="off"
+        placeholder="Buscar país…"
+        [value]="filtro()"
+        (input)="actualizarFiltro($event)"
+        (keydown)="alTeclear($event)">
+    </div>
+
+    @for (pais of paisesVisibles(); track pais) {
+      <mat-option [value]="pais">{{ pais }}</mat-option>
+    }
+
+    @if (paisesVisibles().length === 0) {
+      <p class="hb-sin-paises">Ningún país coincide con «{{ filtro() }}».</p>
+    }
+  </mat-select>
+
+  @if (control.touched && control.errors?.['required']) {
+    <mat-error>Selecciona un país.</mat-error>
+  }
+</mat-form-field>

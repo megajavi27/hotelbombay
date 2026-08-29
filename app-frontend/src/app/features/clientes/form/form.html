@@ -28,7 +28,10 @@
             </mat-form-field>
             <mat-form-field>
               <mat-label>Número de Documento</mat-label>
-              <input matInput formControlName="numero_documento" placeholder="0912345678">
+              <input matInput hbDocumento formControlName="numero_documento" placeholder="0912345678">
+              @if (errorDocumento(searchForm.get('numero_documento')); as error) {
+                <mat-error>{{ error }}</mat-error>
+              }
             </mat-form-field>
           </div>
 
@@ -117,7 +120,10 @@
             </mat-form-field>
             <mat-form-field>
               <mat-label>Número de Documento</mat-label>
-              <input matInput formControlName="numero_documento">
+              <input matInput hbDocumento formControlName="numero_documento">
+              @if (errorDocumento(form.get('numero_documento')); as error) {
+                <mat-error>{{ error }}</mat-error>
+              }
             </mat-form-field>
             <mat-form-field>
               <mat-label>Teléfono</mat-label>
@@ -132,10 +138,7 @@
           <!-- Datos del cliente -->
           <h3 class="text-xs font-semibold uppercase tracking-wider text-secondary mb-2 mt-2">Datos del cliente</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-            <mat-form-field>
-              <mat-label>Nacionalidad</mat-label>
-              <input matInput formControlName="nacionalidad">
-            </mat-form-field>
+            <app-select-pais formControlName="nacionalidad" [requerido]="true"></app-select-pais>
             <mat-form-field>
               <mat-label>Fecha de Nacimiento</mat-label>
               <input matInput [matDatepicker]="pickerNacimiento" formControlName="fecha_nacimiento">

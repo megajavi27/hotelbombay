@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
 import { TipoDocumento } from '../../usuario/usuario.entity';
+import { EsNumeroDocumento } from '../../../common/validators/numero-documento.validator';
 
 export class CreateUsuarioDto {
   @ApiProperty({ example: 'Juan' })
@@ -21,6 +22,7 @@ export class CreateUsuarioDto {
 
   @ApiProperty({ example: '0912345678' })
   @IsString()
+  @EsNumeroDocumento()
   numero_documento: string;
 
   @ApiPropertyOptional({ example: '0991234567' })

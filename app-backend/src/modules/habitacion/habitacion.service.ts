@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PaginationDto } from '../../common/dto/pagination.dto';
@@ -53,15 +53,36 @@ export class HabitacionService {
     return this.ordenarImagenes(habitacion);
   }
 
-  create(dto: CreateHabitacionDto): Promise<Habitacion> {
+  async create(dto: CreateHabitacionDto): Promise<Habitacion> {
+    await this.verificarNumeroLibre(dto.numero);
     const habitacion = this.repository.create(dto);
     return this.repository.save(habitacion);
   }
 
   async update(id_habitacion: number, dto: UpdateHabitacionDto): Promise<Habitacion> {
     const habitacion = await this.findOne(id_habitacion);
+    if (dto.numero && dto.numero !== habitacion.numero) {
+      await this.verificarNumeroLibre(dto.numero);
+    }
     Object.assign(habitacion, dto);
     return this.repository.save(habitacion);
+  }
+
+  /**
+   * `habitacion.numero` es UNIQUE en la base de datos.
+   *
+   * Sin esta comprobación el duplicado lo detectaba MySQL, TypeORM lo convertía
+   * en un QueryFailedError y Nest lo devolvía como un 500 genérico: el usuario
+   * veía "Ocurrió un error al guardar" y no había forma de saber que el problema
+   * era simplemente que ese número de habitación ya existía.
+   */
+  private async verificarNumeroLibre(numero: string): Promise<void> {
+    const existente = await this.repository.findOne({ where: { numero } });
+    if (existente) {
+      throw new ConflictException(
+        `Ya existe la habitación número ${numero}. Usa otro número.`,
+      );
+    }
   }
 
   async remove(id_habitacion: number): Promise<void> {

@@ -3,16 +3,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Habitacion } from '../habitacion/habitacion.entity';
 import { Reserva } from '../reserva/reserva.entity';
 import { Pago } from '../pago/pago.entity';
-import { Cliente } from '../cliente/cliente.entity';
-import { Empleado } from '../empleado/empleado.entity';
-import { RecomendacionIa } from '../recomendacion-ia/recomendacion-ia.entity';
 import { DashboardService } from './dashboard.service';
 import { DashboardController } from './dashboard.controller';
 
+/**
+ * Solo se registran las tres entidades cuyos repositorios se inyectan. Los tipos
+ * de habitación, clientes y usuarios se alcanzan por JOIN desde reserva, y para
+ * eso basta con que estén declarados en la conexión.
+ */
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Habitacion, Reserva, Pago, Cliente, Empleado, RecomendacionIa]),
-  ],
+  imports: [TypeOrmModule.forFeature([Habitacion, Reserva, Pago])],
   controllers: [DashboardController],
   providers: [DashboardService],
 })

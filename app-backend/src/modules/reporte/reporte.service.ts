@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import moment from 'moment';
-import puppeteer from 'puppeteer';
+import puppeteer, { Browser } from 'puppeteer';
 import { Pago, EstadoPago, MetodoPago } from '../pago/pago.entity';
 import { Reserva, EstadoReserva } from '../reserva/reserva.entity';
 import { Habitacion } from '../habitacion/habitacion.entity';
@@ -164,6 +164,8 @@ function htmlDoc(titulo: string, subtitulo: string, desde: string | undefined, h
 
 @Injectable()
 export class ReporteService {
+  private readonly logger = new Logger(ReporteService.name);
+
   constructor(
     @InjectRepository(Pago)       private readonly pagoRepo: Repository<Pago>,
     @InjectRepository(Reserva)    private readonly reservaRepo: Repository<Reserva>,
@@ -171,11 +173,29 @@ export class ReporteService {
     @InjectRepository(Cliente)    private readonly clienteRepo: Repository<Cliente>,
   ) {}
 
+  /**
+   * Convierte el HTML del reporte en un PDF usando el Chrome de Puppeteer.
+   *
+   * Puppeteer descarga su propia copia de Chrome durante el `postinstall` del
+   * paquete. Si ese script no llegó a ejecutarse —npm lo bloquea cuando el
+   * proyecto usa una lista de `allowScripts`— el navegador no existe en disco y
+   * `launch()` falla. Sin este try/catch el usuario solo veía "Error al generar
+   * el reporte", que no dice qué hay que hacer para arreglarlo.
+   */
   private async toPdf(html: string): Promise<Buffer> {
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-    });
+    let browser: Browser;
+    try {
+      browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+      });
+    } catch (error) {
+      this.logger.error('No se pudo iniciar Chrome para generar el PDF.', error as Error);
+      throw new ServiceUnavailableException(
+        'No se pudo iniciar el navegador que genera los PDF. En la carpeta app-backend ejecuta: npx puppeteer browsers install chrome',
+      );
+    }
+
     try {
       const page = await browser.newPage();
       await page.setContent(html, { waitUntil: 'networkidle0' });

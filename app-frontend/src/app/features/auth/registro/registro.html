@@ -80,12 +80,14 @@
 
           <mat-form-field class="w-full">
             <mat-label>Número de documento</mat-label>
-            <input matInput formControlName="numero_documento">
-            @if (form.get('numero_documento')?.touched && form.get('numero_documento')?.errors?.['required']) {
-              <mat-error>Requerido.</mat-error>
+            <input matInput hbDocumento formControlName="numero_documento">
+            @if (errorDocumento(form.get('numero_documento')); as error) {
+              <mat-error>{{ error }}</mat-error>
             }
           </mat-form-field>
         </div>
+
+        <app-select-pais formControlName="nacionalidad" [requerido]="true"></app-select-pais>
 
         <mat-form-field class="w-full">
           <mat-label>Teléfono (opcional)</mat-label>

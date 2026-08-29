@@ -1,6 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsDateString, IsEmail, IsEnum, IsNumber, IsOptional, IsString, Min, MinLength } from 'class-validator';
 import { TipoDocumento } from '../../usuario/usuario.entity';
+import { EsNumeroDocumento } from '../../../common/validators/numero-documento.validator';
 
 export class CreateEmpleadoDto {
   // ── Opción A: vincular a usuario existente ──────────────────────────────
@@ -40,6 +41,7 @@ export class CreateEmpleadoDto {
   @ApiPropertyOptional({ example: '0923456789' })
   @IsOptional()
   @IsString()
+  @EsNumeroDocumento()
   numero_documento?: string;
 
   @ApiPropertyOptional()

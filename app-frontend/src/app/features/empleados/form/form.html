@@ -28,7 +28,10 @@
             </mat-form-field>
             <mat-form-field>
               <mat-label>Número de Documento</mat-label>
-              <input matInput formControlName="numero_documento" placeholder="0912345678">
+              <input matInput hbDocumento formControlName="numero_documento" placeholder="0912345678">
+              @if (errorDocumento(searchForm.get('numero_documento')); as error) {
+                <mat-error>{{ error }}</mat-error>
+              }
             </mat-form-field>
           </div>
 
@@ -116,7 +119,10 @@
             </mat-form-field>
             <mat-form-field>
               <mat-label>Número de Documento</mat-label>
-              <input matInput formControlName="numero_documento">
+              <input matInput hbDocumento formControlName="numero_documento">
+              @if (errorDocumento(form.get('numero_documento')); as error) {
+                <mat-error>{{ error }}</mat-error>
+              }
             </mat-form-field>
             <mat-form-field>
               <mat-label>Teléfono</mat-label>

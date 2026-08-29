@@ -310,3 +310,99 @@ mat-sidenav-content::-webkit-scrollbar-thumb:hover {
 .hb-mobile-card-item:last-child {
   border-bottom: none;
 }
+
+/* ---------------------------------------------------------------- */
+/* Dashboard — títulos de gráfico, estado vacío y pestañas          */
+/* ---------------------------------------------------------------- */
+
+/* Título de cada tarjeta de gráfico. Discreto a propósito: el que tiene
+   que destacar es el dato, no el rótulo. */
+.hb-chart-titulo {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #44474d;
+  margin-bottom: 1rem;
+}
+
+/* Un gráfico sin datos no se deja en blanco: se dice por qué está vacío,
+   para que no parezca que algo falló. */
+.hb-chart-vacio {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8125rem;
+  color: #75777e;
+  text-align: center;
+  padding: 4rem 0;
+}
+
+/* Pestañas del dashboard con los colores de la marca. */
+.hb-dashboard-tabs .mdc-tab__text-label {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.hb-dashboard-tabs .mdc-tab-indicator__content--underline {
+  border-color: #755a34;
+  border-top-width: 3px;
+}
+
+.hb-dashboard-tabs .mdc-tab--active .mdc-tab__text-label {
+  color: #04162e !important;
+}
+
+/* ---------------------------------------------------------------- */
+/* Selector de país con buscador                                    */
+/* ---------------------------------------------------------------- */
+
+/* El panel del desplegable se dibuja en un overlay, fuera del árbol del
+   componente, así que sus estilos tienen que ser globales. */
+.hb-panel-pais {
+  padding-top: 0 !important;
+}
+
+/* La caja de búsqueda queda pegada arriba mientras se recorre la lista:
+   con casi 200 países, perderla de vista al desplazarse sería un fastidio. */
+.hb-buscador-pais {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #c5c6ce;
+}
+
+.hb-buscador-pais .mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #75777e;
+  flex-shrink: 0;
+}
+
+.hb-buscador-pais input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  color: #1b1c1c;
+}
+
+.hb-buscador-pais input::placeholder {
+  color: #75777e;
+}
+
+.hb-sin-paises {
+  padding: 16px 14px;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8125rem;
+  color: #75777e;
+}

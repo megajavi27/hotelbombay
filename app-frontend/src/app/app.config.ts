@@ -6,6 +6,7 @@ import { MAT_ICON_DEFAULT_OPTIONS } from '@angular/material/icon';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { MAT_DATE_LOCALE } from '@angular/material/core';
 import { MatDatepickerIntl } from '@angular/material/datepicker';
+import { MatPaginatorIntl } from '@angular/material/paginator';
 import { provideMomentDateAdapter } from '@angular/material-moment-adapter';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
@@ -19,6 +20,7 @@ import { routes } from './app.routes';
 import { authInterceptor } from '@interceptors/auth.interceptor';
 import { HB_MOMENT_DATE_FORMATS } from '@utils/date.util';
 import { DatepickerIntlEs } from './core/config/datepicker-es.config';
+import { PaginatorIntlEs } from './core/config/paginator-es.config';
 
 // Español como idioma por defecto de moment en toda la aplicación. Los formatos
 // de date.util.ts son numéricos (YYYY-MM-DD), así que esto no altera lo que se
@@ -40,6 +42,11 @@ export const appConfig: ApplicationConfig = {
     provideMomentDateAdapter(HB_MOMENT_DATE_FORMATS),
     { provide: MAT_DATE_LOCALE, useValue: 'es' },
     { provide: MatDatepickerIntl, useClass: DatepickerIntlEs },
+
+    // ── Paginadores en español ────────────────────────────────────────────
+    // Material no traduce el paginador con el locale: hay que sustituir la
+    // clase de textos. Registrado aquí, lo heredan todas las listas.
+    { provide: MatPaginatorIntl, useClass: PaginatorIntlEs },
 
     provideCharts(withDefaultRegisterables()),
     { provide: MAT_ICON_DEFAULT_OPTIONS, useValue: { fontSet: 'material-symbols-outlined' } },

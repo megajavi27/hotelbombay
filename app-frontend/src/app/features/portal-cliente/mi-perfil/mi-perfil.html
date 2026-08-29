@@ -54,11 +54,7 @@
               <input matInput formControlName="direccion">
               <mat-icon matSuffix>home</mat-icon>
             </mat-form-field>
-            <mat-form-field>
-              <mat-label>Nacionalidad</mat-label>
-              <input matInput formControlName="nacionalidad">
-              <mat-icon matSuffix>flag</mat-icon>
-            </mat-form-field>
+            <app-select-pais formControlName="nacionalidad" [requerido]="true"></app-select-pais>
             <mat-form-field>
               <mat-label>Fecha de Nacimiento</mat-label>
               <input matInput [matDatepicker]="pickerNac" formControlName="fecha_nacimiento">

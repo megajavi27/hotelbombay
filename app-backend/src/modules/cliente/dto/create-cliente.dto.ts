@@ -1,6 +1,7 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsDateString, IsEmail, IsEnum, IsNumber, IsOptional, IsString, MinLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsBoolean, IsDateString, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, MinLength } from 'class-validator';
 import { TipoDocumento } from '../../usuario/usuario.entity';
+import { EsNumeroDocumento } from '../../../common/validators/numero-documento.validator';
 
 export class CreateClienteDto {
   // ── Opción A: vincular a usuario existente ──────────────────────────────
@@ -40,6 +41,7 @@ export class CreateClienteDto {
   @ApiPropertyOptional({ example: '0912345678' })
   @IsOptional()
   @IsString()
+  @EsNumeroDocumento()
   numero_documento?: string;
 
   @ApiPropertyOptional({ example: '0991234567' })
@@ -53,10 +55,16 @@ export class CreateClienteDto {
   direccion?: string;
 
   // ── Datos del cliente (tabla cliente) ──────────────────────────────────
-  @ApiPropertyOptional({ example: 'Ecuatoriana' })
-  @IsOptional()
+  /**
+   * Obligatoria, se cree el cliente desde cero o se vincule a un usuario que ya
+   * existe: en ambos casos la fila de `cliente` es nueva y necesita el dato.
+   * Se guarda el nombre del país ("Ecuador") y no el gentilicio, que es como lo
+   * agrupa el dashboard.
+   */
+  @ApiProperty({ example: 'Ecuador' })
+  @IsNotEmpty({ message: 'La nacionalidad es obligatoria.' })
   @IsString()
-  nacionalidad?: string;
+  nacionalidad: string;
 
   @ApiPropertyOptional({ example: '1995-08-20' })
   @IsOptional()

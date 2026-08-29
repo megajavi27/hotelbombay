@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -13,6 +13,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { EmpleadoService } from '@services/empleado.service';
 import { UsuarioService, BusquedaDocumentoResult } from '@services/usuario.service';
 import { NotificationService } from '@services/notification.service';
+import { DocumentoDirective } from '@shared/directives/documento.directive';
+import { mensajeErrorDocumento } from '@utils/documento.util';
 import { toIsoDate } from '@utils/date.util';
 import moment from 'moment';
 
@@ -33,6 +35,7 @@ type Paso = 'buscar' | 'datos';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    DocumentoDirective,
   ],
   templateUrl: './form.html'
 })
@@ -254,4 +257,13 @@ export class FormComponent {
       }
     });
   }
+
+  /**
+   * Mensaje de error del número de documento. La regla depende del tipo elegido
+   * (10 dígitos la cédula, 13 el RUC), así que se resuelve en un solo sitio.
+   */
+  errorDocumento(control: AbstractControl | null): string | null {
+    return control?.touched ? mensajeErrorDocumento(control.errors) : null;
+  }
+
 }

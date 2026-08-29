@@ -1,0 +1,77 @@
+<div
+  class="hb-carrusel"
+  [attr.data-efecto]="efecto()"
+  (mouseenter)="pausar()"
+  (mouseleave)="reanudar()"
+  (focusin)="pausar()"
+  (focusout)="reanudar()">
+
+  <!-- Sin loading="lazy" a propósito: las fotos del carrusel están en pantalla
+       desde el primer momento, y aplazar su descarga solo consigue que la
+       primera transición ocurra sobre una imagen que todavía no ha llegado. -->
+  @for (foto of fotos(); track $index) {
+    <img
+      [src]="foto"
+      [alt]="descripcion() + ' ' + ($index + 1)"
+      class="hb-carrusel-foto"
+      [class.activa]="$index === indice()"
+      [class.saliente]="$index === saliente()"
+      [class.tapada]="$index === indice() && hayMosaico()"
+      [attr.aria-hidden]="$index === indice() ? null : 'true'"
+      [attr.fetchpriority]="$index === 0 ? 'high' : null"
+      decoding="async">
+  }
+
+  <!-- Mosaico: solo aparece durante los efectos troceados. La foto entrante se
+       reconstruye en celdas que van encajando, y por debajo sigue viéndose la
+       anterior hasta que el mosaico la cubre por completo. -->
+  @if (hayMosaico()) {
+    <div class="hb-carrusel-mosaico" aria-hidden="true">
+      @for (celda of celdas(); track $index) {
+        <span
+          class="hb-carrusel-celda"
+          [style.background-image]="'url(&quot;' + fotoActual() + '&quot;)'"
+          [style.background-size]="celda.tamano"
+          [style.background-position]="celda.posicion"
+          [style.animation-delay.ms]="celda.retardo"></span>
+      }
+    </div>
+  }
+
+  @if (!listo()) {
+    <div class="hb-carrusel-cargando">
+      <span class="hb-carrusel-pulso"></span>
+    </div>
+  }
+
+  @if (fotos().length > 1) {
+    <button
+      type="button"
+      class="hb-carrusel-flecha izquierda"
+      (click)="anteriorManual()"
+      aria-label="Foto anterior">
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+
+    <button
+      type="button"
+      class="hb-carrusel-flecha derecha"
+      (click)="siguienteManual()"
+      aria-label="Foto siguiente">
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+
+    <div class="hb-carrusel-puntos">
+      @for (foto of fotos(); track $index) {
+        <button
+          type="button"
+          class="hb-carrusel-punto"
+          [class.activo]="$index === indice()"
+          (click)="irA($index)"
+          [attr.aria-label]="'Ver foto ' + ($index + 1)"
+          [attr.aria-current]="$index === indice() ? 'true' : null">
+        </button>
+      }
+    </div>
+  }
+</div>

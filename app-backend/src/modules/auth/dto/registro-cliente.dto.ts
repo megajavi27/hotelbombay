@@ -1,6 +1,7 @@
 import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { TipoDocumento } from '../../usuario/usuario.entity';
+import { EsNumeroDocumento } from '../../../common/validators/numero-documento.validator';
 
 export class RegistroClienteDto {
   @ApiProperty() @IsNotEmpty() @IsString()
@@ -21,6 +22,7 @@ export class RegistroClienteDto {
   tipo_documento?: TipoDocumento;
 
   @ApiProperty() @IsNotEmpty() @IsString()
+  @EsNumeroDocumento()
   numero_documento: string;
 
   @ApiPropertyOptional() @IsOptional() @IsString()
@@ -29,8 +31,15 @@ export class RegistroClienteDto {
   @ApiPropertyOptional() @IsOptional() @IsString()
   direccion?: string;
 
-  @ApiPropertyOptional() @IsOptional() @IsString()
-  nacionalidad?: string;
+  /**
+   * Obligatoria. La validación del navegador solo evita el error honesto: quien
+   * llame a la API directamente se la puede saltar, y entonces el dato que
+   * alimenta el panel de nacionalidades del dashboard llegaría vacío.
+   */
+  @ApiProperty({ example: 'Ecuador' })
+  @IsNotEmpty({ message: 'La nacionalidad es obligatoria.' })
+  @IsString()
+  nacionalidad: string;
 
   @ApiPropertyOptional() @IsOptional() @IsString()
   fecha_nacimiento?: string;

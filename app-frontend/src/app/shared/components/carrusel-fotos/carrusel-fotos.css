@@ -1,0 +1,266 @@
+/* Duración de las transiciones. Tiene que coincidir con DURACION_TRANSICION
+   del componente: es lo que tarda la foto saliente en retirarse del DOM. */
+.hb-carrusel {
+  --duracion: 800ms;
+  --curva: cubic-bezier(0.4, 0, 0.2, 1);
+
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  overflow: hidden;
+  border-radius: 16px;
+  background-color: #1a2b44;
+}
+
+/* Las fotos se apilan en la misma posición. Solo dos están visibles a la vez:
+   la que entra (activa) y la que se va (saliente). */
+.hb-carrusel-foto {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  z-index: 0;
+  /* Sin esto, las fotos ocultas siguen siendo clicables por encima de la visible. */
+  pointer-events: none;
+  animation-duration: var(--duracion);
+  animation-timing-function: var(--curva);
+  animation-fill-mode: both;
+}
+
+.hb-carrusel-foto.activa   { opacity: 1; z-index: 2; }
+.hb-carrusel-foto.saliente { opacity: 1; z-index: 1; }
+
+/* Durante los efectos troceados quien dibuja la foto entrante es el mosaico,
+   así que la <img> de debajo se calla hasta que aquel termina. */
+.hb-carrusel-foto.tapada { opacity: 0; animation-name: none !important; }
+
+/* ── Efectos ─────────────────────────────────────────────────────────────────
+   Cada efecto es una pareja de animaciones que duran lo mismo. En los
+   desplazamientos eso es imprescindible: si la que entra y la que sale no van
+   sincronizadas, se abre un hueco entre las dos y se ve el fondo. */
+
+/* Fundido */
+.hb-carrusel[data-efecto='fundido'] .hb-carrusel-foto.activa   { animation-name: entra-fundido; }
+.hb-carrusel[data-efecto='fundido'] .hb-carrusel-foto.saliente { animation-name: sale-fundido; }
+
+@keyframes entra-fundido { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sale-fundido  { from { opacity: 1; } to { opacity: 0; } }
+
+/* Desplazamiento hacia la izquierda */
+.hb-carrusel[data-efecto='izquierda'] .hb-carrusel-foto.activa   { animation-name: entra-izquierda; }
+.hb-carrusel[data-efecto='izquierda'] .hb-carrusel-foto.saliente { animation-name: sale-izquierda; }
+
+@keyframes entra-izquierda { from { transform: translateX(100%); }  to { transform: translateX(0); } }
+@keyframes sale-izquierda  { from { transform: translateX(0); }     to { transform: translateX(-100%); } }
+
+/* Desplazamiento hacia la derecha */
+.hb-carrusel[data-efecto='derecha'] .hb-carrusel-foto.activa   { animation-name: entra-derecha; }
+.hb-carrusel[data-efecto='derecha'] .hb-carrusel-foto.saliente { animation-name: sale-derecha; }
+
+@keyframes entra-derecha { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+@keyframes sale-derecha  { from { transform: translateX(0); }    to { transform: translateX(100%); } }
+
+/* Desplazamiento hacia arriba */
+.hb-carrusel[data-efecto='arriba'] .hb-carrusel-foto.activa   { animation-name: entra-arriba; }
+.hb-carrusel[data-efecto='arriba'] .hb-carrusel-foto.saliente { animation-name: sale-arriba; }
+
+@keyframes entra-arriba { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes sale-arriba  { from { transform: translateY(0); }    to { transform: translateY(-100%); } }
+
+/* Acercamiento: la nueva entra grande y se asienta */
+.hb-carrusel[data-efecto='acercar'] .hb-carrusel-foto.activa   { animation-name: entra-acercar; }
+.hb-carrusel[data-efecto='acercar'] .hb-carrusel-foto.saliente { animation-name: sale-acercar; }
+
+@keyframes entra-acercar {
+  from { opacity: 0; transform: scale(1.25); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes sale-acercar {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.9); }
+}
+
+/* Alejamiento: la nueva entra pequeña y crece hasta su tamaño */
+.hb-carrusel[data-efecto='alejar'] .hb-carrusel-foto.activa   { animation-name: entra-alejar; }
+.hb-carrusel[data-efecto='alejar'] .hb-carrusel-foto.saliente { animation-name: sale-alejar; }
+
+@keyframes entra-alejar {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes sale-alejar {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(1.15); }
+}
+
+/* ── Mosaico ─────────────────────────────────────────────────────────────────
+   Cada celda enseña un trozo de la misma foto: la imagen se agranda tantas
+   veces como columnas y filas tiene la rejilla y se desplaza para que a cada
+   celda le toque su pedazo. Encajadas todas, se ve la foto completa. */
+
+.hb-carrusel-mosaico {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  pointer-events: none;
+}
+
+.hb-carrusel[data-efecto='cuadricula'] .hb-carrusel-mosaico {
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+}
+
+.hb-carrusel[data-efecto='persianas'] .hb-carrusel-mosaico {
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: 1fr;
+}
+
+.hb-carrusel-celda {
+  opacity: 0;
+  background-repeat: no-repeat;
+  animation-fill-mode: forwards;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hb-carrusel[data-efecto='cuadricula'] .hb-carrusel-celda {
+  animation-name: celda-cuadricula;
+  animation-duration: 380ms;
+}
+
+.hb-carrusel[data-efecto='persianas'] .hb-carrusel-celda {
+  animation-name: celda-persiana;
+  animation-duration: 420ms;
+}
+
+/* El salto de escala es lo que hace que se vean los bordes de cada pieza
+   mientras entran, en vez de un fundido uniforme. */
+@keyframes celda-cuadricula {
+  from { opacity: 0; transform: scale(0.55); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes celda-persiana {
+  from { opacity: 0; transform: translateY(-100%); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Estado de carga ─────────────────────────────────────────────────────────
+   Mientras bajan las primeras fotos se ve el fondo de la marca con un brillo
+   que se desplaza, en vez de un rectángulo muerto. */
+
+.hb-carrusel-cargando {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  overflow: hidden;
+  background-color: #1a2b44;
+}
+
+.hb-carrusel-pulso {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    rgba(253, 215, 167, 0) 20%,
+    rgba(253, 215, 167, 0.12) 50%,
+    rgba(253, 215, 167, 0) 80%
+  );
+  background-size: 220% 100%;
+  animation: hb-brillo 1.4s ease-in-out infinite;
+}
+
+@keyframes hb-brillo {
+  from { background-position: 180% 0; }
+  to   { background-position: -80% 0; }
+}
+
+/* ── Flechas ─────────────────────────────────────────────────────────────── */
+
+.hb-carrusel-flecha {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  color: #04162e;
+  /* Fondo semiopaco: las flechas tienen que leerse tanto sobre una foto clara
+     como sobre una oscura, y no se sabe cuál va a tocar. */
+  background-color: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 2px 8px rgba(4, 22, 46, 0.25);
+  transition: background-color 150ms ease;
+}
+
+.hb-carrusel-flecha:hover {
+  background-color: #ffffff;
+}
+
+.hb-carrusel-flecha:focus-visible {
+  outline: 2px solid #fdd7a7;
+  outline-offset: 2px;
+}
+
+.hb-carrusel-flecha.izquierda { left: 10px; }
+.hb-carrusel-flecha.derecha   { right: 10px; }
+
+.hb-carrusel-flecha .mat-icon {
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+}
+
+/* ── Puntos ──────────────────────────────────────────────────────────────── */
+
+.hb-carrusel-puntos {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12px;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.hb-carrusel-punto {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  background-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 1px 3px rgba(4, 22, 46, 0.4);
+  transition: background-color 200ms ease, width 200ms ease;
+}
+
+.hb-carrusel-punto.activo {
+  width: 20px;
+  background-color: #fdd7a7;
+}
+
+.hb-carrusel-punto:focus-visible {
+  outline: 2px solid #fdd7a7;
+  outline-offset: 2px;
+}
+
+/* El brillo de carga sí se calla con la preferencia de reducir movimiento: es
+   decoración pura y se repite sin parar, que es el caso que más molesta. Las
+   transiciones entre fotos se mantienen —duran menos de un segundo, no se
+   repiten y el carrusel se puede pausar con el cursor o llevar a mano con las
+   flechas y los puntos. */
+@media (prefers-reduced-motion: reduce) {
+  .hb-carrusel-pulso {
+    animation: none;
+  }
+}
