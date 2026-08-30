@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -13,6 +13,7 @@ import { ClienteService } from '@services/cliente.service';
 import { HabitacionService } from '@services/habitacion.service';
 import { NotificationService } from '@services/notification.service';
 import { toIsoDate, hoySinHora, fechaFinPosteriorValidator } from '@utils/date.util';
+import { capacidadDeHabitacion, capacidadMaximaValidator } from '@utils/capacidad.util';
 import moment from 'moment';
 
 @Component({
@@ -47,6 +48,22 @@ export class FormComponent {
   habitaciones = signal<any[]>([]);
   isSaving = signal(false);
 
+  /** Id de la habitación elegida. Se guarda aparte del formulario para poder derivar de él. */
+  private idHabitacionSel = signal<number | null>(null);
+
+  /**
+   * Habitación elegida, resuelta contra la lista cargada. Es derivada y no un
+   * valor que se asigna: en modo edición el formulario se rellena antes de que
+   * termine de llegar la lista de habitaciones, y así se resuelve sola cuando
+   * llega, sin depender del orden de las respuestas.
+   */
+  habitacionSel = computed(() =>
+    this.habitaciones().find(h => h.id_habitacion === this.idHabitacionSel()) ?? null
+  );
+
+  /** Cuántas personas admite el tipo de la habitación elegida. null mientras no haya habitación. */
+  capacidadMaxima = computed(() => capacidadDeHabitacion(this.habitacionSel()));
+
   /** Fecha mínima de check-in: solo se restringe al crear una reserva nueva; al editar
    *  una reserva existente se permite conservar sus fechas originales (aunque ya hayan pasado). */
   readonly minDate = hoySinHora();
@@ -57,12 +74,23 @@ export class FormComponent {
       id_habitacion: ['', Validators.required],
       fecha_inicio: ['', Validators.required],
       fecha_fin: ['', Validators.required],
-      numero_huespedes: [1, [Validators.required, Validators.min(1)]],
+      numero_huespedes: [1, [Validators.required, Validators.min(1), capacidadMaximaValidator(() => this.capacidadMaxima())]],
       estado: ['PENDIENTE', Validators.required],
       observaciones: ['']
     }, { validators: fechaFinPosteriorValidator('fecha_inicio', 'fecha_fin') });
 
     this.clienteService.getAll(1,1000).subscribe({ next: (r) => this.clientes.set(r.data) });
+
+    this.form.get('id_habitacion')?.valueChanges.subscribe((id: number | null) => {
+      this.idHabitacionSel.set(id ?? null);
+    });
+
+    // Revalida los huéspedes cada vez que cambia el límite: al elegir otra
+    // habitación, y también cuando termina de cargar la lista en modo edición.
+    effect(() => {
+      this.capacidadMaxima();
+      this.form.get('numero_huespedes')?.updateValueAndValidity({ emitEvent: false });
+    });
 
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');

@@ -34,6 +34,9 @@
                 @if (h.tipoHabitacion?.precio_noche) {
                   (${{ h.tipoHabitacion.precio_noche | number:'1.2-2' }}/noche)
                 }
+                @if (h.tipoHabitacion?.capacidad_maxima) {
+                  · hasta {{ h.tipoHabitacion.capacidad_maxima }} huésped(es)
+                }
               </mat-option>
             }
           </mat-select>
@@ -52,6 +55,12 @@
               <p class="text-on-surface-variant text-xs mt-0.5">{{ habitacionSel().tipoHabitacion.descripcion }}</p>
             }
             <p class="text-primary font-bold mt-1">${{ habitacionSel().tipoHabitacion?.precio_noche | number:'1.2-2' }} / noche</p>
+            @if (capacidadMaxima(); as max) {
+              <p class="text-on-surface-variant text-xs mt-1 flex items-center gap-1">
+                <mat-icon class="!text-sm !w-4 !h-4">people</mat-icon>
+                Capacidad máxima: {{ max }} huésped(es)
+              </p>
+            }
             </div>
           </div>
         }
@@ -85,8 +94,16 @@
         <!-- Huéspedes -->
         <mat-form-field class="w-full">
           <mat-label>Número de huéspedes</mat-label>
-          <input matInput type="number" min="1" formControlName="numero_huespedes">
+          <input matInput type="number" min="1" [attr.max]="capacidadMaxima()" formControlName="numero_huespedes">
           <mat-icon matSuffix>people</mat-icon>
+          @if (capacidadMaxima(); as max) {
+            <mat-hint>Esta habitación admite hasta {{ max }} huésped(es).</mat-hint>
+          } @else {
+            <mat-hint>Elige una habitación para ver su capacidad.</mat-hint>
+          }
+          @if (form.get('numero_huespedes')?.hasError('capacidadExcedida')) {
+            <mat-error>Supera la capacidad: máximo {{ capacidadMaxima() }} huésped(es) en esta habitación.</mat-error>
+          }
         </mat-form-field>
 
         <!-- Observaciones -->

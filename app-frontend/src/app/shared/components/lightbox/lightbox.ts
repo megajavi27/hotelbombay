@@ -1,4 +1,4 @@
-import { Component, EventEmitter, HostListener, Input, Output, signal } from '@angular/core';
+import { Component, DOCUMENT, ElementRef, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -14,6 +14,14 @@ const PASO_ESCALA = 0.5;
  * quita al recibir (cerrado). Así no hace falta ni un servicio global ni montar
  * nada en el layout raíz — basta con declararlo donde haya fotos.
  *
+ * Al abrirse, el elemento se traslada al <body>. Su capa es `position: fixed`,
+ * y una capa fija deja de medirse contra la ventana en cuanto algún antecesor
+ * tiene transform, filter o backdrop-filter: pasa a medirse contra ese
+ * antecesor. Las tarjetas de la aplicación (.hb-card) llevan backdrop-filter,
+ * así que dentro de una tarjeta el visor se abría encajonado en ella en lugar
+ * de a pantalla completa. Sacándolo al <body> no queda ningún antecesor que lo
+ * pueda encerrar, use quien lo use y esté donde esté.
+ *
  * Atajos: Escape cierra · ←/→ cambian de foto · + y − hacen zoom · 0 lo resetea.
  */
 @Component({
@@ -22,7 +30,13 @@ const PASO_ESCALA = 0.5;
   imports: [MatButtonModule, MatIconModule, MatTooltipModule],
   templateUrl: './lightbox.html',
 })
-export class LightboxComponent {
+export class LightboxComponent implements OnInit, OnDestroy {
+  private readonly host: ElementRef<HTMLElement> = inject(ElementRef);
+  private readonly documento = inject(DOCUMENT);
+
+  /** Valor de overflow que tenía el body antes de abrir, para devolverlo al cerrar. */
+  private overflowPrevio = '';
+
   /** URLs ya resueltas de las fotos de la galería. */
   @Input({ required: true }) imagenes: readonly string[] = [];
 
@@ -46,6 +60,19 @@ export class LightboxComponent {
 
   readonly escalaMin = ESCALA_MIN;
   readonly escalaMax = ESCALA_MAX;
+
+  ngOnInit(): void {
+    this.documento.body.appendChild(this.host.nativeElement);
+    // Bloquea el desplazamiento de la página de atrás: con el visor abierto, la
+    // rueda del ratón es el control del zoom y no debe mover nada más.
+    this.overflowPrevio = this.documento.body.style.overflow;
+    this.documento.body.style.overflow = 'hidden';
+  }
+
+  ngOnDestroy(): void {
+    this.documento.body.style.overflow = this.overflowPrevio;
+    this.host.nativeElement.remove();
+  }
 
   actual(): string {
     return this.imagenes[this.indice()] ?? '';

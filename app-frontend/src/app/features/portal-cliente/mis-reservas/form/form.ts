@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -14,6 +14,7 @@ import { ReservaService } from '@services/reserva.service';
 import { HabitacionService } from '@services/habitacion.service';
 import { NotificationService } from '@services/notification.service';
 import { toIsoDate, hoySinHora, fechaFinPosteriorValidator } from '@utils/date.util';
+import { capacidadDeHabitacion, capacidadMaximaValidator } from '@utils/capacidad.util';
 import { GaleriaVisorComponent } from '@shared/components/galeria-visor/galeria-visor';
 
 @Component({
@@ -47,6 +48,9 @@ export class NuevaReservaFormComponent {
   habitaciones   = signal<any[]>([]);
   habitacionSel  = signal<any | null>(null);
 
+  /** Cuántas personas admite el tipo de la habitación elegida. null mientras no haya habitación. */
+  capacidadMaxima = computed(() => capacidadDeHabitacion(this.habitacionSel()));
+
   /** Tipo de habitación preseleccionado al venir desde la página pública ("Reservar" en una tarjeta). */
   readonly tipoIdPreseleccionado: number | null = (() => {
     const raw = this.route.snapshot.queryParamMap.get('tipoId');
@@ -67,7 +71,7 @@ export class NuevaReservaFormComponent {
       id_habitacion:    [null, Validators.required],
       fecha_inicio:     [null, Validators.required],
       fecha_fin:        [null, Validators.required],
-      numero_huespedes: [1, [Validators.required, Validators.min(1)]],
+      numero_huespedes: [1, [Validators.required, Validators.min(1), capacidadMaximaValidator(() => this.capacidadMaxima())]],
       observaciones:    [''],
     }, { validators: fechaFinPosteriorValidator('fecha_inicio', 'fecha_fin') });
 
@@ -96,6 +100,13 @@ export class NuevaReservaFormComponent {
     this.form.get('id_habitacion')?.valueChanges.subscribe(id => {
       const hab = this.habitaciones().find(h => h.id_habitacion === id) ?? null;
       this.habitacionSel.set(hab);
+    });
+
+    // Revalida los huéspedes cada vez que cambia el límite, para que el aviso
+    // aparezca al elegir una habitación más pequeña y no solo al escribir.
+    effect(() => {
+      this.capacidadMaxima();
+      this.form.get('numero_huespedes')?.updateValueAndValidity({ emitEvent: false });
     });
   }
 

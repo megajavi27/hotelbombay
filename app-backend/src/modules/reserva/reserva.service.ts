@@ -146,6 +146,8 @@ export class ReservaService {
         dto.id_habitacion, dto.fecha_inicio, dto.fecha_fin, undefined, manager, habitacion.id_tipos_habitacion,
       );
 
+      this.validarCapacidad(habitacion, dto.numero_huespedes);
+
       const total = Number(habitacion.tipoHabitacion.precio_noche) * noches;
       const reserva = manager.create(Reserva, {
         ...dto,
@@ -198,6 +200,18 @@ export class ReservaService {
         reserva.total = Number(habitacion.tipoHabitacion.precio_noche) * noches;
       }
     }
+
+    // La capacidad se revisa cuando cambian los huéspedes o la habitación: al
+    // mover una reserva de 4 personas a una individual, el número deja de caber
+    // aunque nadie haya tocado el campo de huéspedes.
+    if (dto.numero_huespedes !== undefined || dto.id_habitacion !== undefined) {
+      const habitacion = await this.habitacionRepository.findOne({
+        where: { id_habitacion: reserva.id_habitacion },
+        relations: { tipoHabitacion: true },
+      });
+      if (habitacion) this.validarCapacidad(habitacion, reserva.numero_huespedes);
+    }
+
     const guardada = await this.reservaRepository.save(reserva);
     return formatEntityDates(guardada, FECHA_FIELDS);
   }
@@ -332,6 +346,27 @@ export class ReservaService {
       if (disponibles.length >= 3) break;
     }
     return disponibles;
+  }
+
+  /**
+   * Una habitación no puede alojar a más personas de las que admite su tipo.
+   *
+   * El límite lo define el hotel en tipos_habitacion.capacidad_maxima y se
+   * comprueba aquí, en el servidor. El formulario también lo comprueba, pero esa
+   * validación es solo comodidad para quien la usa: se salta llamando a la API
+   * directamente, así que la regla tiene que vivir también de este lado.
+   */
+  private validarCapacidad(habitacion: Habitacion, numero_huespedes?: number): void {
+    const huespedes = Number(numero_huespedes ?? 1);
+    const maximo = Number(habitacion.tipoHabitacion?.capacidad_maxima ?? 0);
+    if (!maximo || !Number.isFinite(huespedes)) return;
+
+    if (huespedes > maximo) {
+      const plural = maximo === 1 ? 'huésped' : 'huéspedes';
+      throw new BadRequestException(
+        `La habitación ${habitacion.numero} (${habitacion.tipoHabitacion.nombre}) admite ${maximo} ${plural} como máximo, y se solicitaron ${huespedes}.`,
+      );
+    }
   }
 
   private calcularNoches(fecha_inicio: string, fecha_fin: string): number {

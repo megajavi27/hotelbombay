@@ -22,7 +22,7 @@
             <mat-label>Habitación</mat-label>
             <mat-select formControlName="id_habitacion">
               @for (h of habitaciones(); track h.id_habitacion) {
-                <mat-option [value]="h.id_habitacion">{{ h.numero }} — {{ h.tipoHabitacion?.nombre }} (${{ h.tipoHabitacion?.precio_noche }}/noche)</mat-option>
+                <mat-option [value]="h.id_habitacion">{{ h.numero }} — {{ h.tipoHabitacion?.nombre }} (${{ h.tipoHabitacion?.precio_noche }}/noche · hasta {{ h.tipoHabitacion?.capacidad_maxima }} huésped(es))</mat-option>
               }
             </mat-select>
           </mat-form-field>
@@ -45,7 +45,15 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
           <mat-form-field>
             <mat-label>Número de Huéspedes</mat-label>
-            <input matInput type="number" min="1" formControlName="numero_huespedes">
+            <input matInput type="number" min="1" [attr.max]="capacidadMaxima()" formControlName="numero_huespedes">
+            @if (capacidadMaxima(); as max) {
+              <mat-hint>Esta habitación admite hasta {{ max }} huésped(es).</mat-hint>
+            } @else {
+              <mat-hint>Elige una habitación para ver su capacidad.</mat-hint>
+            }
+            @if (form.get('numero_huespedes')?.hasError('capacidadExcedida')) {
+              <mat-error>Supera la capacidad: máximo {{ capacidadMaxima() }} huésped(es) en esta habitación.</mat-error>
+            }
           </mat-form-field>
           <mat-form-field>
             <mat-label>Estado</mat-label>
